@@ -1,0 +1,147 @@
+export type Language = 'en' | 'ps' | 'da';
+
+export const LANGUAGES: { code: Language; label: string; dir: 'ltr' | 'rtl' }[] = [
+  { code: 'en', label: 'English', dir: 'ltr' },
+  { code: 'ps', label: 'پښتو', dir: 'rtl' },
+  { code: 'da', label: 'دری', dir: 'rtl' },
+];
+
+// Single source of truth for every customer-facing string in the app.
+// Admin screens are deliberately English-only and do NOT use this file.
+export const STRINGS = {
+  brand: {
+    appName: {
+      en: 'Employment Platform',
+      ps: 'د استخدام پلاتفورم',
+      da: 'پلتفورم استخدام',
+    },
+  },
+  nav: {
+    jobs: { en: 'Jobs', ps: 'دندې', da: 'بست‌ها' },
+    cvBuilder: { en: 'CV Builder', ps: 'د سي وی جوړونکی', da: 'سازنده سی‌وی' },
+    savedJobs: { en: 'Saved', ps: 'ساتل شوي', da: 'ذخیره شده' },
+    signIn: { en: 'Sign in', ps: 'ننوتل', da: 'ورود' },
+    signOut: { en: 'Sign out', ps: 'وتل', da: 'خروج' },
+  },
+  auth: {
+    signInTitle: { en: 'Welcome back', ps: 'بېرته ښه راغلاست', da: 'خوش آمدید' },
+    signUpTitle: { en: 'Create your account', ps: 'خپل حساب جوړ کړئ', da: 'حساب خود را بسازید' },
+    email: { en: 'Email', ps: 'ایمیل', da: 'ایمیل' },
+    password: { en: 'Password', ps: 'پاسورډ', da: 'رمز عبور' },
+    signInButton: { en: 'Sign in', ps: 'ننوتل', da: 'ورود' },
+    signUpButton: { en: 'Create account', ps: 'حساب جوړ کړئ', da: 'ایجاد حساب' },
+    noAccount: { en: "Don't have an account?", ps: 'حساب نلرئ؟', da: 'حساب ندارید؟' },
+    haveAccount: { en: 'Already have an account?', ps: 'مخکې حساب لرئ؟', da: 'قبلاً حساب دارید؟' },
+    switchToSignUp: { en: 'Create one', ps: 'یو جوړ کړئ', da: 'یکی بسازید' },
+    switchToSignIn: { en: 'Sign in', ps: 'ننوتل', da: 'ورود' },
+    checkEmail: {
+      en: 'Account created. Check your email to confirm, then sign in.',
+      ps: 'حساب جوړ شو. مهرباني وکړئ خپل ایمیل وګورئ او بیا ننوځئ.',
+      da: 'حساب ایجاد شد. لطفاً ایمیل خود را بررسی کرده و سپس وارد شوید.',
+    },
+  },
+  jobBoard: {
+    title: { en: 'Find your next role', ps: 'خپله راتلونکې دنده ومومئ', da: 'شغل بعدی خود را پیدا کنید' },
+    subtitle: {
+      en: 'Vacancies gathered daily from ACBAR, ReliefWeb, jobs.af, and Wazifaha.',
+      ps: 'خالي دندې چې هره ورځ د ACBAR، ReliefWeb، jobs.af، او وظیفه‌ها څخه راټولیږي.',
+      da: 'بست‌های خالی که روزانه از ACBAR، ReliefWeb، jobs.af و وظیفه‌ها جمع‌آوری می‌شود.',
+    },
+    searchPlaceholder: { en: 'Search job title or keyword', ps: 'د دندې نوم یا کلیدي کلمه ولټوئ', da: 'عنوان شغل یا کلیدواژه را جستجو کنید' },
+    filterLocation: { en: 'Location', ps: 'موقعیت', da: 'موقعیت' },
+    filterCategory: { en: 'Category', ps: 'کټه‌ګورۍ', da: 'دسته‌بندی' },
+    allLocations: { en: 'All locations', ps: 'ټول ځایونه', da: 'همه مکان‌ها' },
+    allCategories: { en: 'All categories', ps: 'ټولې کټه‌ګورۍ', da: 'همه دسته‌بندی‌ها' },
+    noResults: {
+      en: 'No jobs match your search yet. Try a different keyword or location.',
+      ps: 'ستاسو لټون سره سمون خوړونکې دنده و نه موندل شوه. بله کلیدي کلمه یا ځای وازمویئ.',
+      da: 'هیچ شغلی با جستجوی شما مطابقت ندارد. کلیدواژه یا مکان دیگری را امتحان کنید.',
+    },
+    deadline: { en: 'Deadline', ps: 'وروستۍ نېټه', da: 'مهلت' },
+    viewDetails: { en: 'View details', ps: 'جزئیات وګورئ', da: 'مشاهده جزئیات' },
+    save: { en: 'Save', ps: 'ساتل', da: 'ذخیره' },
+    saved: { en: 'Saved', ps: 'وساتل شو', da: 'ذخیره شد' },
+    source: { en: 'Source', ps: 'سرچینه', da: 'منبع' },
+    applyOnSource: { en: 'Apply on original site', ps: 'په اصلي سایټ کې غوښتنه وکړئ', da: 'در سایت اصلی درخواست دهید' },
+    backToJobs: { en: 'Back to jobs', ps: 'بېرته دندو ته', da: 'بازگشت به شغل‌ها' },
+    expired: { en: 'This vacancy has closed.', ps: 'دا خالي دنده تړل شوې ده.', da: 'این موقعیت شغلی بسته شده است.' },
+    savedTitle: { en: 'Your saved jobs', ps: 'ستاسو ساتل شوې دندې', da: 'شغل‌های ذخیره‌شده شما' },
+    noSavedJobs: {
+      en: "You haven't saved any jobs yet. Browse listings and tap Save to keep track of ones you like.",
+      ps: 'تاسو تر اوسه هېڅ دنده نه ده ساتلې. دندې وګورئ او د خوښې وړ دندې د ساتلو لپاره Save کېکاږئ.',
+      da: 'شما هنوز هیچ شغلی را ذخیره نکرده‌اید. آگهی‌ها را مرور کنید و روی ذخیره بزنید.',
+    },
+  },
+  cv: {
+    title: { en: 'Build your CV', ps: 'خپل سي وی جوړ کړئ', da: 'سی‌وی خود را بسازید' },
+    subtitle: {
+      en: 'Fill in your details once — download a clean, professional CV in minutes.',
+      ps: 'خپل معلومات یو ځل ډک کړئ — په څو دقیقو کې پاک او مسلکي سي وی ډاونلوډ کړئ.',
+      da: 'اطلاعات خود را یک‌بار وارد کنید — در چند دقیقه یک سی‌وی تمیز و حرفه‌ای دانلود کنید.',
+    },
+    sectionPersonal: { en: 'Personal information', ps: 'شخصي معلومات', da: 'اطلاعات شخصی' },
+    fullName: { en: 'Full name', ps: 'بشپړ نوم', da: 'نام کامل' },
+    email: { en: 'Email', ps: 'ایمیل', da: 'ایمیل' },
+    phone: { en: 'Phone number', ps: 'د تلیفون شمېره', da: 'شماره تلفن' },
+    address: { en: 'Address', ps: 'پته', da: 'آدرس' },
+    location: { en: 'Location', ps: 'موقعیت', da: 'موقعیت' },
+    summary: { en: 'Professional summary', ps: 'مسلکي لنډیز', da: 'خلاصه حرفه‌ای' },
+    summaryPlaceholder: {
+      en: 'A short paragraph about your experience and what you\u2019re looking for.',
+      ps: 'ستاسو د تجربې او هغه څه په اړه یو لنډ پراګراف چې تاسو یې لټوئ.',
+      da: 'یک پاراگراف کوتاه درباره تجربه شما و آنچه به دنبال آن هستید.',
+    },
+    sectionEducation: { en: 'Education', ps: 'زده کړه', da: 'تحصیلات' },
+    sectionExperience: { en: 'Work experience', ps: 'د کار تجربه', da: 'تجربه کاری' },
+    sectionSkills: { en: 'Skills', ps: 'مهارتونه', da: 'مهارت‌ها' },
+    skillsPlaceholder: { en: 'e.g. Patient care, MS Excel, Pashto & Dari', ps: 'لکه: د ناروغانو پاملرنه، MS Excel، پښتو او دري', da: 'مانند: مراقبت از بیمار، MS Excel، پشتو و دری' },
+    institution: { en: 'Institution', ps: 'ادارې', da: 'مؤسسه' },
+    degree: { en: 'Degree / field', ps: 'سند / برخه', da: 'مدرک / رشته' },
+    year: { en: 'Year', ps: 'کال', da: 'سال' },
+    employer: { en: 'Employer', ps: 'کارګمارونکی', da: 'کارفرما' },
+    role: { en: 'Role', ps: 'رول', da: 'نقش' },
+    duration: { en: 'Duration', ps: 'موده', da: 'مدت' },
+    description: { en: 'Description', ps: 'تفصیل', da: 'توضیحات' },
+    addEducation: { en: '+ Add education', ps: '+ زده کړه اضافه کړئ', da: '+ افزودن تحصیلات' },
+    addExperience: { en: '+ Add experience', ps: '+ تجربه اضافه کړئ', da: '+ افزودن تجربه' },
+    remove: { en: 'Remove', ps: 'لرې کول', da: 'حذف' },
+    downloadPdf: { en: 'Download PDF', ps: 'PDF ډاونلوډ کړئ', da: 'دانلود PDF' },
+    sectionLanguages: { en: 'Languages', ps: 'ژبې', da: 'زبان‌ها' },
+    languageName: { en: 'Language', ps: 'ژبه', da: 'زبان' },
+    proficiency: { en: 'Proficiency', ps: 'مهارت کچه', da: 'سطح مهارت' },
+    nativeLabel: { en: 'Native', ps: 'مورنۍ ژبه', da: 'زبان مادری' },
+    markNative: { en: 'Mark as native', ps: 'د مورنۍ ژبې په توګه نښه کړئ', da: 'به عنوان زبان مادری علامت بزنید' },
+    addLanguage: { en: '+ Add language', ps: '+ ژبه اضافه کړئ', da: '+ افزودن زبان' },
+    proficiencyNative: { en: 'Native', ps: 'مورنۍ', da: 'مادری' },
+    proficiencyFluent: { en: 'Fluent', ps: 'روانه', da: 'مسلط' },
+    proficiencyAdvanced: { en: 'Advanced', ps: 'پرمختللی', da: 'پیشرفته' },
+    proficiencyIntermediate: { en: 'Intermediate', ps: 'منځنی', da: 'متوسط' },
+    proficiencyBasic: { en: 'Basic', ps: 'لومړنی', da: 'مقدماتی' },
+  },
+  common: {
+    loading: { en: 'Loading…', ps: 'بارېږي…', da: 'در حال بارگذاری…' },
+    required: { en: 'Required', ps: 'اړین', da: 'ضروری' },
+  },
+  footer: {
+    about: {
+      en: 'Vacancies are gathered automatically from public sources including ACBAR, ReliefWeb, jobs.af, and Wazifaha, alongside listings added directly. We do our best to keep information accurate, but always verify details and deadlines on the original posting before applying.',
+      ps: 'خالي دندې په اتومات ډول د عامه سرچینو لکه ACBAR، ReliefWeb، jobs.af، او وظیفه‌ها څخه راټولیږي، سربېره پردې ځینې دندې مستقیم اضافه کیږي. موږ هڅه کوو معلومات سم وي، خو تل مخکې د غوښتنې کولو د اصلي پوسټ تفصیلات او نېټې وګورئ.',
+      da: 'موقعیت‌های شغلی به‌صورت خودکار از منابع عمومی از جمله ACBAR، ReliefWeb، jobs.af و وظیفه‌ها جمع‌آوری می‌شوند، به همراه آگهی‌های اضافه‌شده به‌صورت مستقیم. ما تلاش می‌کنیم اطلاعات دقیق باشد، اما همیشه پیش از درخواست، جزئیات و مهلت را در آگهی اصلی بررسی کنید.',
+    },
+    contact: { en: 'Contact', ps: 'اړیکه', da: 'تماس' },
+    aboutHeading: { en: 'About this site', ps: 'د دې سایټ په اړه', da: 'درباره این سایت' },
+    rightsReserved: { en: 'All rights reserved.', ps: 'ټول حقونه خوندي دي.', da: 'کلیه حقوق محفوظ است.' },
+  },
+} as const;
+
+type Strings = typeof STRINGS;
+
+// Dot-path lookup with type help kept loose intentionally — depth of STRINGS
+// makes a fully-typed path impractical without heavier tooling than this
+// project needs right now.
+export function t(strings: Strings, lang: Language, section: keyof Strings, key: string): string {
+  const group = strings[section] as Record<string, Record<Language, string>>;
+  const entry = group?.[key];
+  if (!entry) return `${String(section)}.${key}`;
+  return entry[lang] ?? entry.en;
+}
