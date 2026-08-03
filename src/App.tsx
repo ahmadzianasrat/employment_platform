@@ -14,7 +14,7 @@ function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <div className="flex min-h-screen flex-col bg-[var(--color-paper)]">
             <Header />
             <main className="flex-1">
