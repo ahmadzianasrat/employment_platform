@@ -81,6 +81,26 @@
 
 ---
 
+## Update — Job board redesign, provinces filter, Kabul-time changelog: 2026-08-04 01:02 PM (Kabul time)
+
+**Note:** timestamps from this entry forward are in Kabul time (UTC+4:30), not the sandbox's local time as before — per your request.
+
+**Root cause of the blank `hamqar.com` page, resolved**: `git pull` reported "up to date" because I never had push access to your actual GitHub repo — I can only edit files in my own working copy. The subfolder-path fix, `CNAME` file, and Tailwind syntax cleanup from earlier were never actually deployed. Delivered as a fresh zip this time instead of relying on git sync.
+
+- **`base` flipped to `/`** in `vite.config.ts`, confirmed root-level asset paths in the build output — this is what was actually broken on `hamqar.com`
+- **`.gitignore` re-added** — same dotfile-loss pattern as `.github` and `.htaccess` before (Windows zip extraction silently drops dotfiles); flagged a verification step to catch this going forward
+- **Job board rebuilt as a table** (title/organization/profession/deadline/gender/location/source/details, sequential row numbers, "New" badge for listings <3 days old, deadline shown in red) — matching the reference design
+- **New `profession` and `gender` columns** added to the `jobs` table (migration `004_optional_profession_gender.sql`) — nullable, since the PHP scraper doesn't capture these; admin-editable per job, shown as "—" when unset. Sample data updated with example values.
+- **Location filter** rebuilt as a dropdown with "All Locations" + all 34 Afghan provinces as radio options — matches by substring against the job's free-text location field, so a job listing multiple provinces (e.g. "Kabul, Herat") correctly matches either province, not just an exact single-value match
+- **Profession filter** added — dropdown built dynamically from distinct profession values present in current listings
+- **Language dropdown** added inline in the job board's filter row (in addition to the existing header switcher) to match the reference design
+- **Telegram (Pashto) / Telegram (Dari) buttons** added per row, replacing the reference design's generic Telegram/WhatsApp icons — both are placeholder links for now (`src/lib/config/channelLinks.ts` — **update `TELEGRAM_PASHTO_URL` / `TELEGRAM_DARI_URL` before going live**). Assumed these are global community channel links (same for every row), not per-job — flag if that assumption's wrong.
+- **Apply button/column removed** from the table (per request) — the job detail page's "Apply on original site" link was deliberately left in place, since that's the actual mechanism for reaching a real application, not the same thing as the table's decorative Apply button. Flag if this should also be hidden.
+- **Organization logos**: not implemented (per request) — table shows organization name as plain text only
+- SQL: `database/migrations/004_optional_profession_gender.sql`
+
+---
+
 ## Running it locally
 ```
 npm install

@@ -44,10 +44,10 @@ export function SaveJobButton({ jobId, className = '' }: { jobId: string; classN
       onClick={handleClick}
       disabled={busy}
       aria-pressed={saved}
-      className={`rounded-[var(--radius-md)] border px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-60 ${
+      className={`rounded-(--radius-md) border px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-60 ${
         saved
-          ? 'border-[var(--color-saffron)] bg-[var(--color-saffron)]/10 text-[var(--color-saffron)]'
-          : 'border-[var(--color-line)] text-[var(--color-muted)] hover:border-[var(--color-lapis)] hover:text-[var(--color-lapis)]'
+          ? 'border-(--color-saffron) bg-(--color-saffron)/10 text-(--color-saffron)'
+          : 'border-(--color-line) text-(--color-muted) hover:border-(--color-lapis) hover:text-(--color-lapis)'
       } ${className}`}
     >
       {saved ? `★ ${tr('jobBoard', 'saved')}` : tr('jobBoard', 'save')}

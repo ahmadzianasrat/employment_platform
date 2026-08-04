@@ -22,6 +22,7 @@ export const SAMPLE_JOBS: Job[] = [
     status: 'active',
     scraped_at: '2026-07-30T06:00:00Z',
     created_at: '2026-07-30T06:00:00Z',
+    profession: 'Healthcare', gender: 'Female',
   },
   {
     id: '2',
@@ -42,6 +43,7 @@ export const SAMPLE_JOBS: Job[] = [
     status: 'active',
     scraped_at: '2026-07-31T09:00:00Z',
     created_at: '2026-07-31T09:00:00Z',
+    profession: 'Data & Statistics', gender: null,
   },
   {
     id: '3',
@@ -62,6 +64,7 @@ export const SAMPLE_JOBS: Job[] = [
     status: 'active',
     scraped_at: '2026-07-31T11:00:00Z',
     created_at: '2026-07-31T11:00:00Z',
+    profession: 'Administration', gender: null,
   },
   {
     id: '4',
@@ -82,6 +85,7 @@ export const SAMPLE_JOBS: Job[] = [
     status: 'active',
     scraped_at: '2026-07-29T14:00:00Z',
     created_at: '2026-07-29T14:00:00Z',
+    profession: 'Engineering', gender: 'Male',
   },
   {
     id: '5',
@@ -102,5 +106,6 @@ export const SAMPLE_JOBS: Job[] = [
     status: 'active',
     scraped_at: null,
     created_at: '2026-07-28T08:00:00Z',
+    profession: 'Pharmacy', gender: null,
   },
 ];

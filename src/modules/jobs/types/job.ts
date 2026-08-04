@@ -16,4 +16,6 @@ export interface Job {
   status: 'active' | 'hidden' | 'expired';
   scraped_at: string | null;
   created_at: string;
+  profession: string | null;
+  gender: string | null;
 }

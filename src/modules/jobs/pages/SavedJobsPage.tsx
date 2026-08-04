@@ -14,15 +14,15 @@ export function SavedJobsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="font-display text-2xl font-semibold text-[var(--color-ink)]">
+      <h1 className="font-display text-2xl font-semibold text-(--color-ink)">
         {tr('jobBoard', 'savedTitle')}
       </h1>
 
       <div className="mt-6">
         {loading ? (
-          <p className="text-[var(--color-muted)]">{tr('common', 'loading')}</p>
+          <p className="text-(--color-muted)">{tr('common', 'loading')}</p>
         ) : jobs.length === 0 ? (
-          <p className="text-[var(--color-muted)]">{tr('jobBoard', 'noSavedJobs')}</p>
+          <p className="text-(--color-muted)">{tr('jobBoard', 'noSavedJobs')}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {jobs.map((job) => (

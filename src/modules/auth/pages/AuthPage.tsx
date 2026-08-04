@@ -4,8 +4,8 @@ import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { useAuth } from '../../../lib/auth/AuthContext';
 
 const inputClass =
-  'w-full rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-paper-raised)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-lapis)]';
-const labelClass = 'mb-1 block text-sm font-medium text-[var(--color-ink)]';
+  'w-full rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) px-3 py-2.5 text-sm outline-none focus:border-(--color-lapis)';
+const labelClass = 'mb-1 block text-sm font-medium text-(--color-ink)';
 
 export function AuthPage() {
   const { tr } = useLanguage();
@@ -47,7 +47,7 @@ export function AuthPage() {
 
   return (
     <div className="mx-auto flex max-w-md flex-col px-6 py-16">
-      <h1 className="font-display text-2xl font-semibold text-[var(--color-ink)]">
+      <h1 className="font-display text-2xl font-semibold text-(--color-ink)">
         {mode === 'signin' ? tr('auth', 'signInTitle') : tr('auth', 'signUpTitle')}
       </h1>
 
@@ -75,12 +75,12 @@ export function AuthPage() {
         </div>
 
         {error && (
-          <p className="rounded-[var(--radius-md)] bg-[var(--color-danger)]/10 px-3 py-2 text-sm text-[var(--color-danger)]">
+          <p className="rounded-(--radius-md) bg-(--color-danger)/10 px-3 py-2 text-sm text-(--color-danger)">
             {error}
           </p>
         )}
         {info && (
-          <p className="rounded-[var(--radius-md)] bg-[var(--color-success)]/10 px-3 py-2 text-sm text-[var(--color-success)]">
+          <p className="rounded-(--radius-md) bg-(--color-success)/10 px-3 py-2 text-sm text-(--color-success)">
             {info}
           </p>
         )}
@@ -88,13 +88,13 @@ export function AuthPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-[var(--radius-md)] bg-[var(--color-saffron)] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-saffron-light)] disabled:opacity-60"
+          className="w-full rounded-(--radius-md) bg-(--color-saffron) px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-(--color-saffron-light) disabled:opacity-60"
         >
           {mode === 'signin' ? tr('auth', 'signInButton') : tr('auth', 'signUpButton')}
         </button>
       </form>
 
-      <p className="mt-5 text-sm text-[var(--color-muted)]">
+      <p className="mt-5 text-sm text-(--color-muted)">
         {mode === 'signin' ? tr('auth', 'noAccount') : tr('auth', 'haveAccount')}{' '}
         <button
           onClick={() => {
@@ -102,7 +102,7 @@ export function AuthPage() {
             setError(null);
             setInfo(null);
           }}
-          className="font-medium text-[var(--color-lapis)] hover:underline"
+          className="font-medium text-(--color-lapis) hover:underline"
         >
           {mode === 'signin' ? tr('auth', 'switchToSignUp') : tr('auth', 'switchToSignIn')}
         </button>

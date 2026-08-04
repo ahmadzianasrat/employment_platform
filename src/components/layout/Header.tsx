@@ -23,7 +23,7 @@ export function Header() {
 
   return (
     <header
-      className="border-b-2 border-[var(--color-saffron)] shadow-[0_1px_0_rgba(0,0,0,0.15)]"
+      className="border-b-2 border-(--color-saffron) shadow-[0_1px_0_rgba(0,0,0,0.15)]"
       style={{
         background: 'linear-gradient(135deg, var(--color-lapis) 0%, var(--color-lapis-dark) 100%)',
       }}
@@ -42,7 +42,7 @@ export function Header() {
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[var(--color-saffron)]" />
+                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                   )}
                   {tr('nav', 'jobs')}
                 </>
@@ -52,7 +52,7 @@ export function Header() {
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[var(--color-saffron)]" />
+                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                   )}
                   {tr('nav', 'cvBuilder')}
                 </>
@@ -63,7 +63,7 @@ export function Header() {
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[var(--color-saffron)]" />
+                      <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                     )}
                     {tr('nav', 'savedJobs')}
                   </>
@@ -75,7 +75,7 @@ export function Header() {
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[var(--color-saffron)]" />
+                      <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                     )}
                     Admin
                   </>
@@ -96,7 +96,7 @@ export function Header() {
           ) : (
             <NavLink
               to="/sign-in"
-              className="rounded-sm border border-white/30 px-3 py-1.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-white hover:border-[var(--color-saffron)] hover:text-[var(--color-saffron)]"
+              className="rounded-sm border border-white/30 px-3 py-1.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-white hover:border-(--color-saffron) hover:text-(--color-saffron)"
             >
               {tr('nav', 'signIn')}
             </NavLink>

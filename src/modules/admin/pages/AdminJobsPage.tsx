@@ -74,6 +74,8 @@ export function AdminJobsPage() {
       location: job.location,
       deadline_raw: job.deadline_raw,
       expires_on: job.expires_on,
+      profession: job.profession,
+      gender: job.gender,
     });
   }
 
@@ -87,8 +89,8 @@ export function AdminJobsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="font-display text-2xl font-semibold text-[var(--color-ink)]">Admin — Job Listings</h1>
-      <p className="mt-1 text-sm text-[var(--color-muted)]">
+      <h1 className="font-display text-2xl font-semibold text-(--color-ink)">Admin — Job Listings</h1>
+      <p className="mt-1 text-sm text-(--color-muted)">
         {jobs.length} total listings
         {totalDuplicateJobs > 0 && (
           <> · {totalDuplicateJobs} flagged as possible cross-platform duplicates</>
@@ -99,7 +101,7 @@ export function AdminJobsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-          className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-paper-raised)] px-3 py-1.5 text-sm"
+          className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) px-3 py-1.5 text-sm"
         >
           <option value="all">All statuses</option>
           <option value="active">Active</option>
@@ -107,7 +109,7 @@ export function AdminJobsPage() {
           <option value="expired">Expired</option>
         </select>
 
-        <label className="flex items-center gap-2 text-sm text-[var(--color-ink)]">
+        <label className="flex items-center gap-2 text-sm text-(--color-ink)">
           <input
             type="checkbox"
             checked={duplicatesOnly}
@@ -118,14 +120,14 @@ export function AdminJobsPage() {
 
         <button
           onClick={load}
-          className="ml-auto rounded-[var(--radius-md)] border border-[var(--color-line)] px-3 py-1.5 text-sm font-medium text-[var(--color-lapis)] hover:bg-[var(--color-lapis)]/5"
+          className="ml-auto rounded-(--radius-md) border border-(--color-line) px-3 py-1.5 text-sm font-medium text-(--color-lapis) hover:bg-(--color-lapis)/5"
         >
           Refresh
         </button>
       </div>
 
       {loading ? (
-        <p className="mt-8 text-[var(--color-muted)]">Loading…</p>
+        <p className="mt-8 text-(--color-muted)">Loading…</p>
       ) : (
         <div className="mt-6 space-y-2">
           {visibleJobs.map((job) => {
@@ -136,60 +138,74 @@ export function AdminJobsPage() {
             return (
               <div
                 key={job.id}
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-paper-raised)] p-4"
+                className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) p-4"
                 style={borderColor ? { borderLeft: `4px solid ${borderColor}` } : undefined}
               >
                 {isEditing ? (
                   <div className="space-y-2">
                     <input
-                      className="w-full rounded border border-[var(--color-line)] px-2 py-1 text-sm font-semibold"
+                      className="w-full rounded border border-(--color-line) px-2 py-1 text-sm font-semibold"
                       value={editDraft.title ?? ''}
                       onChange={(e) => setEditDraft((d) => ({ ...d, title: e.target.value }))}
                     />
                     <div className="grid grid-cols-4 gap-2">
                       <input
-                        className="rounded border border-[var(--color-line)] px-2 py-1 text-sm"
+                        className="rounded border border-(--color-line) px-2 py-1 text-sm"
                         placeholder="Employer"
                         value={editDraft.employer ?? ''}
                         onChange={(e) => setEditDraft((d) => ({ ...d, employer: e.target.value }))}
                       />
                       <input
-                        className="rounded border border-[var(--color-line)] px-2 py-1 text-sm"
+                        className="rounded border border-(--color-line) px-2 py-1 text-sm"
                         placeholder="Location"
                         value={editDraft.location ?? ''}
                         onChange={(e) => setEditDraft((d) => ({ ...d, location: e.target.value }))}
                       />
                       <div>
                         <input
-                          className="w-full rounded border border-[var(--color-line)] px-2 py-1 text-sm"
+                          className="w-full rounded border border-(--color-line) px-2 py-1 text-sm"
                           placeholder="Deadline (display text)"
                           value={editDraft.deadline_raw ?? ''}
                           onChange={(e) => setEditDraft((d) => ({ ...d, deadline_raw: e.target.value }))}
                         />
-                        <p className="mt-0.5 text-[10px] text-[var(--color-muted)]">Display text only</p>
+                        <p className="mt-0.5 text-[10px] text-(--color-muted)">Display text only</p>
                       </div>
                       <div>
                         <input
                           type="date"
-                          className="w-full rounded border border-[var(--color-line)] px-2 py-1 text-sm"
+                          className="w-full rounded border border-(--color-line) px-2 py-1 text-sm"
                           value={editDraft.expires_on ?? ''}
                           onChange={(e) => setEditDraft((d) => ({ ...d, expires_on: e.target.value || null }))}
                         />
-                        <p className="mt-0.5 text-[10px] text-[var(--color-muted)]">
+                        <p className="mt-0.5 text-[10px] text-(--color-muted)">
                           Actual date — drives sorting &amp; expiry
                         </p>
                       </div>
                     </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      <input
+                        className="rounded border border-(--color-line) px-2 py-1 text-sm"
+                        placeholder="Profession (optional)"
+                        value={editDraft.profession ?? ''}
+                        onChange={(e) => setEditDraft((d) => ({ ...d, profession: e.target.value || null }))}
+                      />
+                      <input
+                        className="rounded border border-(--color-line) px-2 py-1 text-sm"
+                        placeholder="Gender (optional)"
+                        value={editDraft.gender ?? ''}
+                        onChange={(e) => setEditDraft((d) => ({ ...d, gender: e.target.value || null }))}
+                      />
+                    </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => saveEdit(job.id)}
-                        className="rounded bg-[var(--color-lapis)] px-3 py-1 text-xs font-semibold text-white"
+                        className="rounded bg-(--color-lapis) px-3 py-1 text-xs font-semibold text-white"
                       >
                         Save
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
-                        className="rounded border border-[var(--color-line)] px-3 py-1 text-xs font-medium"
+                        className="rounded border border-(--color-line) px-3 py-1 text-xs font-medium"
                       >
                         Cancel
                       </button>
@@ -199,41 +215,41 @@ export function AdminJobsPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-[var(--color-ink)]">{job.title}</h3>
+                        <h3 className="font-semibold text-(--color-ink)">{job.title}</h3>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
                             job.status === 'active'
-                              ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
-                              : 'bg-[var(--color-muted)]/10 text-[var(--color-muted)]'
+                              ? 'bg-(--color-success)/10 text-(--color-success)'
+                              : 'bg-(--color-muted)/10 text-(--color-muted)'
                           }`}
                         >
                           {job.status}
                         </span>
-                        <span className="rounded-full bg-[var(--color-lapis)]/10 px-2 py-0.5 text-[11px] font-medium text-[var(--color-lapis)]">
+                        <span className="rounded-full bg-(--color-lapis)/10 px-2 py-0.5 text-[11px] font-medium text-(--color-lapis)">
                           {job.source_label ?? job.source}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-sm text-[var(--color-muted)]">
-                        {job.employer} {job.location && `· ${job.location}`} {job.deadline_raw && `· deadline: ${job.deadline_raw}`}
+                      <p className="mt-0.5 text-sm text-(--color-muted)">
+                        {job.employer} {job.location && `· ${job.location}`} {job.deadline_raw && `· deadline: ${job.deadline_raw}`} {job.profession && `· ${job.profession}`} {job.gender && `· ${job.gender}`}
                       </p>
                     </div>
 
                     <div className="flex shrink-0 gap-2">
                       <button
                         onClick={() => startEdit(job)}
-                        className="rounded border border-[var(--color-line)] px-3 py-1 text-xs font-medium text-[var(--color-ink)] hover:bg-black/5"
+                        className="rounded border border-(--color-line) px-3 py-1 text-xs font-medium text-(--color-ink) hover:bg-black/5"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleToggleStatus(job)}
-                        className="rounded border border-[var(--color-line)] px-3 py-1 text-xs font-medium text-[var(--color-ink)] hover:bg-black/5"
+                        className="rounded border border-(--color-line) px-3 py-1 text-xs font-medium text-(--color-ink) hover:bg-black/5"
                       >
                         {job.status === 'active' ? 'Hide' : 'Unhide'}
                       </button>
                       <button
                         onClick={() => handleDelete(job)}
-                        className="rounded border border-[var(--color-danger)]/40 px-3 py-1 text-xs font-medium text-[var(--color-danger)] hover:bg-[var(--color-danger)]/5"
+                        className="rounded border border-(--color-danger)/40 px-3 py-1 text-xs font-medium text-(--color-danger) hover:bg-(--color-danger)/5"
                       >
                         Delete
                       </button>
@@ -245,7 +261,7 @@ export function AdminJobsPage() {
           })}
 
           {visibleJobs.length === 0 && (
-            <p className="text-sm text-[var(--color-muted)]">No jobs match the current filter.</p>
+            <p className="text-sm text-(--color-muted)">No jobs match the current filter.</p>
           )}
         </div>
       )}

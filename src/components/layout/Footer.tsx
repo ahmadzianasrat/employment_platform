@@ -8,19 +8,19 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-16 border-t border-[var(--color-line)] bg-[var(--color-paper-raised)]">
+    <footer className="mt-16 border-t border-(--color-line) bg-(--color-paper-raised)">
       <div className="mx-auto max-w-6xl px-6 py-10">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--color-lapis)]">
+        <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-(--color-lapis)">
           {tr('footer', 'aboutHeading')}
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--color-muted)]">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-(--color-muted)">
           {tr('footer', 'about')}
         </p>
 
-        <div className="mt-6 flex flex-col gap-2 border-t border-[var(--color-line)] pt-6 text-sm text-[var(--color-muted)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col gap-2 border-t border-(--color-line) pt-6 text-sm text-(--color-muted) sm:flex-row sm:items-center sm:justify-between">
           <p>
             {tr('footer', 'contact')}:{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-[var(--color-lapis)] hover:underline">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-(--color-lapis) hover:underline">
               {CONTACT_EMAIL}
             </a>
           </p>

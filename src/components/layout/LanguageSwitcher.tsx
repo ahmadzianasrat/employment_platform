@@ -15,7 +15,7 @@ export function LanguageSwitcher() {
             i > 0 ? 'border-l border-white/15' : ''
           } ${
             language === lang.code
-              ? 'bg-[var(--color-saffron)] text-white'
+              ? 'bg-(--color-saffron) text-white'
               : 'text-white/65 hover:text-white'
           }`}
         >

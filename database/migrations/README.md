@@ -8,6 +8,7 @@ environment (or catching up an existing one that's missing later ones).
 | `001_core_schema.sql` | Creates `jobs` and `saved_jobs` tables, indexes, RLS policies | ✅ Applied |
 | `002_enable_realtime.sql` | Enables live updates on `jobs` and `saved_jobs` | ✅ Applied |
 | `003_admin_permissions.sql` | Creates `admin_users` table + admin RLS policies | ✅ Applied |
+| `004_optional_profession_gender.sql` | Adds nullable `profession`/`gender` columns to `jobs` | ⏳ Not yet applied — run this next |
 
 Each file is idempotent-unsafe by design (uses `create table`, not
 `create table if not exists`) — running a file twice on the same database
