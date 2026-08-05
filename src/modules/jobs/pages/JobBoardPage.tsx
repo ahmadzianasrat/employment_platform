@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { useRealtimeJobs } from '../hooks/useRealtimeJobs';
 import { LocationFilter } from '../components/LocationFilter';
+import { OrgAvatar } from '../components/OrgAvatar';
 import { locationMatchesProvince } from '../data/provinces';
 import { TELEGRAM_PASHTO_URL, TELEGRAM_DARI_URL } from '../../../lib/config/channelLinks';
 import type { Language } from '../../../lib/i18n/strings';
+
+const PAGE_SIZE = 20;
 
 function formatDeadline(dateStr: string | null): string | null {
   if (!dateStr) return null;
@@ -19,12 +22,24 @@ function isRecentlyPosted(createdAt: string): boolean {
   return days <= 3;
 }
 
+// Single reusable Telegram "paper plane" icon — used for BOTH the Pashto and
+// Dari channel buttons so they read as the same kind of action, distinguished
+// only by color/tooltip, not by using a mismatched WhatsApp-style icon for one.
+function TelegramIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+      <path d="M21.5 3.5 2.7 10.9c-1.1.44-1.1 1.06-.2 1.34l4.8 1.5 1.86 5.66c.22.6.44.84.9.84.46 0 .66-.2 1.9-1.4l2-2 4.2 3.1c.78.43 1.34.2 1.54-.72l2.8-13.4c.3-1.14-.44-1.66-1.2-1.32Z" />
+    </svg>
+  );
+}
+
 export function JobBoardPage() {
   const { tr, language, setLanguage } = useLanguage();
   const { jobs, loading, isSampleData } = useRealtimeJobs();
   const [search, setSearch] = useState('');
   const [location, setLocation] = useState('all');
   const [profession, setProfession] = useState('all');
+  const [page, setPage] = useState(1);
 
   const professions = useMemo(() => {
     const unique = new Set(jobs.map((j) => j.profession).filter(Boolean) as string[]);
@@ -42,6 +57,15 @@ export function JobBoardPage() {
       return matchesSearch && matchesLocation && matchesProfession;
     });
   }, [jobs, search, location, profession]);
+
+  // Reset to page 1 whenever a filter changes, so you're never stuck on a
+  // page number that no longer has any results.
+  useEffect(() => {
+    setPage(1);
+  }, [search, location, profession]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageJobs = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div>
@@ -114,95 +138,131 @@ export function JobBoardPage() {
           ) : filtered.length === 0 ? (
             <p className="text-(--color-muted)">{tr('jobBoard', 'noResults')}</p>
           ) : (
-            <div className="overflow-x-auto rounded-(--radius-lg) border border-(--color-line)">
-              <table className="w-full min-w-[900px] border-collapse text-sm">
-                <thead>
-                  <tr className="bg-(--color-lapis) text-left text-xs font-semibold uppercase tracking-wide text-white">
-                    <th className="px-3 py-3">{tr('jobBoard', 'colId')}</th>
-                    <th className="px-3 py-3">{tr('jobBoard', 'colPosition')}</th>
-                    <th className="px-3 py-3">{tr('jobBoard', 'colOrganization')}</th>
-                    <th className="px-3 py-3">{tr('jobBoard', 'colProfession')}</th>
-                    <th className="px-3 py-3">{tr('jobBoard', 'colDeadline')}</th>
-                    <th className="px-3 py-3">{tr('jobBoard', 'colGender')}</th>
-                    <th className="px-3 py-3">{tr('jobBoard', 'colLocation')}</th>
-                    <th className="px-3 py-3">{tr('jobBoard', 'colSource')}</th>
-                    <th className="px-3 py-3 text-center">{tr('jobBoard', 'telegramPashto')}</th>
-                    <th className="px-3 py-3 text-center">{tr('jobBoard', 'telegramDari')}</th>
-                    <th className="px-3 py-3 text-center">{tr('jobBoard', 'colDetails')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((job, i) => {
-                    const deadline = formatDeadline(job.expires_on ?? job.deadline_raw);
-                    return (
-                      <tr
-                        key={job.id}
-                        className="border-t border-(--color-line) bg-(--color-paper-raised) hover:bg-black/[0.02]"
-                      >
-                        <td className="px-3 py-3 text-(--color-muted)">{i + 1}</td>
-                        <td className="px-3 py-3">
-                          <Link
-                            to={`/jobs/${job.id}`}
-                            className="font-medium text-(--color-lapis) hover:underline"
+            <>
+              <div className="overflow-x-auto rounded-(--radius-lg) border border-(--color-line)">
+                <table className="w-full min-w-[960px] border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-(--color-lapis) text-left text-xs font-semibold uppercase tracking-wide text-white">
+                      <th className="px-3 py-3">{tr('jobBoard', 'colId')}</th>
+                      <th className="px-3 py-3">{tr('jobBoard', 'colPosition')}</th>
+                      <th className="px-3 py-3"></th>
+                      <th className="px-3 py-3">{tr('jobBoard', 'colOrganization')}</th>
+                      <th className="px-3 py-3">{tr('jobBoard', 'colProfession')}</th>
+                      <th className="px-3 py-3">{tr('jobBoard', 'colDeadline')}</th>
+                      <th className="px-3 py-3">{tr('jobBoard', 'colGender')}</th>
+                      <th className="px-3 py-3">{tr('jobBoard', 'colLocation')}</th>
+                      <th className="px-3 py-3">{tr('jobBoard', 'colSource')}</th>
+                      <th className="px-3 py-3 text-center">{tr('jobBoard', 'telegramPashto')}</th>
+                      <th className="px-3 py-3 text-center">{tr('jobBoard', 'telegramDari')}</th>
+                      <th className="px-3 py-3 text-center">{tr('jobBoard', 'colDetails')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageJobs.map((job, i) => {
+                      const deadline = formatDeadline(job.expires_on ?? job.deadline_raw);
+                      const rowNumber = (page - 1) * PAGE_SIZE + i + 1;
+                      return (
+                        <tr
+                          key={job.id}
+                          className="border-t border-(--color-line) bg-(--color-paper-raised) align-middle hover:bg-black/[0.02]"
+                        >
+                          <td className="px-3 py-3 text-(--color-muted)">{rowNumber}</td>
+                          <td className="max-w-[220px] px-3 py-3">
+                            <Link
+                              to={`/jobs/${job.id}`}
+                              className="font-medium text-(--color-lapis) hover:underline"
+                            >
+                              {job.title}
+                            </Link>
+                            {isRecentlyPosted(job.created_at) && (
+                              <span className="ml-2 rounded-full bg-(--color-success)/10 px-2 py-0.5 text-[10px] font-semibold text-(--color-success)">
+                                New
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3">
+                            <OrgAvatar name={job.employer} />
+                          </td>
+                          <td className="max-w-[160px] truncate px-3 py-3" title={job.employer ?? undefined}>
+                            {job.employer ?? '—'}
+                          </td>
+                          <td className="px-3 py-3">{job.profession ?? '—'}</td>
+                          <td className="whitespace-nowrap px-3 py-3 font-medium text-(--color-danger)">
+                            {deadline ?? '—'}
+                          </td>
+                          <td className="px-3 py-3">{job.gender ?? '—'}</td>
+                          <td
+                            className="max-w-[140px] truncate px-3 py-3"
+                            title={job.location ?? undefined}
                           >
-                            {job.title}
-                          </Link>
-                          {isRecentlyPosted(job.created_at) && (
-                            <span className="ml-2 rounded-full bg-(--color-success)/10 px-2 py-0.5 text-[10px] font-semibold text-(--color-success)">
-                              New
+                            {job.location ?? '—'}
+                          </td>
+                          <td className="px-3 py-3">
+                            <span className="whitespace-nowrap rounded-full bg-(--color-lapis)/10 px-2 py-0.5 text-xs font-medium text-(--color-lapis)">
+                              {job.source_label ?? job.source}
                             </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-3">{job.employer ?? '—'}</td>
-                        <td className="px-3 py-3">{job.profession ?? '—'}</td>
-                        <td className="px-3 py-3 font-medium text-(--color-danger)">{deadline ?? '—'}</td>
-                        <td className="px-3 py-3">{job.gender ?? '—'}</td>
-                        <td className="px-3 py-3">{job.location ?? '—'}</td>
-                        <td className="px-3 py-3">
-                          <span className="rounded-full bg-(--color-lapis)/10 px-2 py-0.5 text-xs font-medium text-(--color-lapis)">
-                            {job.source_label ?? job.source}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <a
-                            href={TELEGRAM_PASHTO_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={tr('jobBoard', 'telegramPashto')}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#229ED9]/10 text-[#229ED9] hover:bg-[#229ED9]/20"
-                          >
-                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-                              <path d="M21.5 3.5 2.7 10.9c-1.1.44-1.1 1.06-.2 1.34l4.8 1.5 1.86 5.66c.22.6.44.84.9.84.46 0 .66-.2 1.9-1.4l2-2 4.2 3.1c.78.43 1.34.2 1.54-.72l2.8-13.4c.3-1.14-.44-1.66-1.2-1.32Z" />
-                            </svg>
-                          </a>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <a
-                            href={TELEGRAM_DARI_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={tr('jobBoard', 'telegramDari')}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-(--color-success)/10 text-(--color-success) hover:bg-(--color-success)/20"
-                          >
-                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-                              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.77.46 3.45 1.35 4.93L2 22l5.29-1.39a9.87 9.87 0 0 0 4.75 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.5 2 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.14.82.84-3.06-.2-.31a8.19 8.19 0 0 1-1.26-4.4c0-4.53 3.69-8.22 8.25-8.22 4.55 0 8.24 3.69 8.24 8.22 0 4.54-3.7 8.28-8.24 8.28Z" />
-                            </svg>
-                          </a>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <Link
-                            to={`/jobs/${job.id}`}
-                            className="rounded-(--radius-md) border border-(--color-line) px-3 py-1 text-xs font-medium text-(--color-ink) hover:bg-black/5"
-                          >
-                            {tr('jobBoard', 'viewDetails')}
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <a
+                              href={TELEGRAM_PASHTO_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={tr('jobBoard', 'telegramPashto')}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#229ED9]/10 text-[#229ED9] hover:bg-[#229ED9]/20"
+                            >
+                              <TelegramIcon className="h-4 w-4" />
+                            </a>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <a
+                              href={TELEGRAM_DARI_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={tr('jobBoard', 'telegramDari')}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-(--color-success)/10 text-(--color-success) hover:bg-(--color-success)/20"
+                            >
+                              <TelegramIcon className="h-4 w-4" />
+                            </a>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <Link
+                              to={`/jobs/${job.id}`}
+                              className="whitespace-nowrap rounded-(--radius-md) border border-(--color-line) px-3 py-1 text-xs font-medium text-(--color-ink) hover:bg-black/5"
+                            >
+                              {tr('jobBoard', 'viewDetails')}
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between text-sm">
+                  <p className="text-(--color-muted)">
+                    Page {page} of {totalPages} · {filtered.length} jobs
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="rounded-(--radius-md) border border-(--color-line) px-3 py-1.5 font-medium text-(--color-ink) disabled:opacity-40"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="rounded-(--radius-md) border border-(--color-line) px-3 py-1.5 font-medium text-(--color-ink) disabled:opacity-40"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

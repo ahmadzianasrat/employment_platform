@@ -101,6 +101,17 @@
 
 ---
 
+## Update — Pagination, truncation, org avatars, icon fix: 2026-08-05 02:37 AM (Kabul time)
+- **Location/Organization cells truncate** with an ellipsis instead of expanding row height, full text available on hover via `title` attribute — fixes the extreme row-height issue on multi-province listings
+- **Pagination added** — 20 jobs per page, resets to page 1 whenever a filter/search changes so you're never stranded on an empty page
+- **Telegram Dari icon fixed** — was mistakenly using a WhatsApp-style bubble icon; both Pashto and Dari buttons now use the identical Telegram paper-plane icon, differentiated only by color/tooltip, not by using two different icon families
+- **Organization avatars added** between Position and Organization columns — deliberately NOT hotlinked/scraped logos (see reasoning below), using deterministic colored initials instead (same pattern as Slack/GitHub/Discord's default avatars)
+  - **Why not real logos**: sandbox network can't reach arbitrary image hosts to download/self-host logos into the repo; Clearbit's free logo API (the obvious historical choice) was permanently shut down Dec 2025, and every current replacement requires an API key plus a company *domain* — which we don't have, only free-text organization names scraped from postings, so there's no reliable name→domain resolution without guessing
+  - **Resource impact of the chosen approach**: zero — no network requests, no external dependency, pure CSS/SVG rendering from data already in hand
+  - **If real logos matter later**: recommended path is admin-uploaded logos per organization stored in Supabase Storage (self-hosted, not hotlinked) — a deliberate future feature, not built now
+
+---
+
 ## Running it locally
 ```
 npm install
