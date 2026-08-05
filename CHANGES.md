@@ -112,6 +112,32 @@
 
 ---
 
+## Update — GitHub Pages Source bug found & fixed, document vault, admin pagination: 2026-08-05 01:33 PM (Kabul time)
+
+**Root cause of the extended blank-page saga, finally found**: `Settings → Pages → Source` had reverted to (or never actually left) **"Deploy from a branch"** instead of **"GitHub Actions."** This meant GitHub was serving the raw repo `index.html` verbatim — `<script src="/src/main.tsx">`, completely unbuilt — never our actual `dist/` output. Every DNS check, cache flush, and browser troubleshooting step along the way was correctly executed and genuinely ruled out those layers one by one; the actual bug was upstream of all of it. Fixed by switching the Source setting back to "GitHub Actions" in the repo settings.
+
+Also discovered mid-session: a second, disconnected git history got created by re-running `git init` inside the original `employment-platform` folder (not `-v2`). Nothing was lost (the push failed before it could overwrite anything on GitHub), but the fix was to treat `employment-platform-v2` as the only real working copy from that point on and `robocopy` the newer files across, rather than trying to reconcile two histories. **The original `employment-platform` folder should be deleted or renamed to avoid ever running git commands in it again.**
+
+### Document vault (new)
+- Two-table design: `document_entries` (one row per document *instance*) + `document_files` (one or more files per entry) — lets a single entry (e.g. one specific university degree) hold multiple files (e.g. diploma scan + transcript)
+- Single-entry types: ID card, passport, driving license, TIN, school diploma
+- Repeatable types (unlimited entries, each with an optional label): university diploma, work experience, employment contract, reference
+- Bulk upload zone: drag/drop multiple files at once, assign each a document type, confirm — creates one unlabeled entry per file (repeatable-type files can be organized further afterward; bulk upload intentionally doesn't ask for a label per file to keep the flow fast)
+- Accepts PDF, JPG, PNG, WEBP; 15MB per file limit
+- Private Supabase Storage bucket (`documents`), folder-scoped RLS so a user can only ever read/write their own files, even with a guessed path
+- **Documents are private to the uploading user only — not visible to admins.** Deliberate choice, not an oversight; flag if admin verification access is wanted later, since that's an additional RLS policy to add on purpose, not something to assume.
+- New `/documents` route + "My Documents" nav link (visible when logged in)
+- SQL: `database/migrations/005_document_vault.sql`, `database/migrations/006_document_storage_bucket.sql`
+
+### Admin pagination
+- Admin jobs table now paginates at 20/page, matching the public job board's pagination, resets to page 1 on filter change
+
+### Documentation overhaul
+- `README.md` rewritten from scratch (was still the default Vite scaffold text this whole time) — now a real project reference covering stack, folder structure, env vars, known gotchas (GitHub Pages Source setting, Windows dotfile extraction, Claude's sandbox/push limitations, `base` path sensitivity, SPA routing workaround, profession/gender timing, logo decision, placeholder Telegram links), and feature status. **Read this first in any fresh conversation about this project.**
+- `database/migrations/README.md` updated with migrations 005/006, and a note to verify 004's actual applied status rather than assume
+
+---
+
 ## Running it locally
 ```
 npm install

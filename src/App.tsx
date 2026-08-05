@@ -9,6 +9,7 @@ import { SavedJobsPage } from './modules/jobs/pages/SavedJobsPage';
 import { CvBuilderPage } from './modules/cv/pages/CvBuilderPage';
 import { AuthPage } from './modules/auth/pages/AuthPage';
 import { AdminJobsPage } from './modules/admin/pages/AdminJobsPage';
+import { DocumentsPage } from './modules/documents/pages/DocumentsPage';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/saved" element={<SavedJobsPage />} />
                 <Route path="/sign-in" element={<AuthPage />} />
                 <Route path="/admin" element={<AdminJobsPage />} />
+                <Route path="/documents" element={<DocumentsPage />} />
               </Routes>
             </main>
             <Footer />

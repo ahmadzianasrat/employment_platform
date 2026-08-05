@@ -70,6 +70,18 @@ export function Header() {
                 )}
               </NavLink>
             )}
+            {user && (
+              <NavLink to="/documents" className={linkClass}>
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
+                    )}
+                    {tr('nav', 'documents')}
+                  </>
+                )}
+              </NavLink>
+            )}
             {isAdmin && (
               <NavLink to="/admin" className={linkClass}>
                 {({ isActive }) => (

@@ -6,6 +6,7 @@ import { findDuplicateGroups } from '../lib/findDuplicates';
 import type { Job } from '../../jobs/types/job';
 
 type StatusFilter = 'all' | 'active' | 'hidden' | 'expired';
+const PAGE_SIZE = 20;
 
 export function AdminJobsPage() {
   const { isAdmin, checking } = useIsAdmin();
@@ -15,6 +16,7 @@ export function AdminJobsPage() {
   const [duplicatesOnly, setDuplicatesOnly] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Partial<Job>>({});
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -50,6 +52,13 @@ export function AdminJobsPage() {
     if (duplicatesOnly) list = list.filter((j) => duplicateGroupColor.has(j.id));
     return list;
   }, [jobs, statusFilter, duplicatesOnly, duplicateGroupColor]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, duplicatesOnly]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleJobs.length / PAGE_SIZE));
+  const pageJobs = visibleJobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   if (checking) return null;
   if (!isAdmin) return <Navigate to="/" replace />;
@@ -130,7 +139,7 @@ export function AdminJobsPage() {
         <p className="mt-8 text-(--color-muted)">Loading…</p>
       ) : (
         <div className="mt-6 space-y-2">
-          {visibleJobs.map((job) => {
+          {pageJobs.map((job) => {
             const groupIdx = duplicateGroupColor.get(job.id);
             const borderColor = groupIdx !== undefined ? groupColors[groupIdx % groupColors.length] : undefined;
             const isEditing = editingId === job.id;
@@ -262,6 +271,30 @@ export function AdminJobsPage() {
 
           {visibleJobs.length === 0 && (
             <p className="text-sm text-(--color-muted)">No jobs match the current filter.</p>
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between text-sm">
+              <p className="text-(--color-muted)">
+                Page {page} of {totalPages} · {visibleJobs.length} jobs
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="rounded-(--radius-md) border border-(--color-line) px-3 py-1.5 font-medium text-(--color-ink) disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="rounded-(--radius-md) border border-(--color-line) px-3 py-1.5 font-medium text-(--color-ink) disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

@@ -14,7 +14,7 @@ git init
 git add .
 git commit -m "Initial commit"
 git branch -M main
-git remote add origin https://github.com/ahmadzianasrat/employment_platform.git
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
 git push -u origin main
 ```
 
@@ -36,6 +36,16 @@ The next push to `main` triggers `.github/workflows/deploy.yml`, which
 builds and publishes the app automatically. You'll get a URL like
 `https://YOUR_USERNAME.github.io/YOUR_REPO/` immediately, before the
 domain is even connected.
+
+⚠️ **This has silently reverted to "Deploy from a branch" at least once
+already**, which serves the raw unbuilt repo instead of the actual build
+output (symptom: viewing page source shows `<script src="/src/main.tsx">`
+instead of `/assets/index-[hash].js`; JS fails to load with a MIME-type
+error in the console). If the live site is ever blank or broken despite
+Actions showing a green checkmark, **check this setting first** before
+troubleshooting DNS, caching, or anything else — it was the actual root
+cause of an extended debugging session that initially looked like a DNS
+propagation issue.
 
 ## Part 2 — Buying the domain + setting up email at Hostinger
 
