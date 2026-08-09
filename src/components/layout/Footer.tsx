@@ -1,7 +1,7 @@
 import { useLanguage } from '../../lib/i18n/LanguageContext';
 
-// TODO: replace with your real contact address before going live.
-const CONTACT_EMAIL = 'contact@yourdomain.com';
+// Support address for hamqar.com
+const CONTACT_EMAIL = 'support@hamqar.com';
 
 export function Footer() {
   const { tr } = useLanguage();

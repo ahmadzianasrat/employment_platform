@@ -14,6 +14,8 @@ environment (or catching up an existing one that's missing later ones).
 | `007_admin_document_review.sql` | Adds `verified`/`verified_at`/`verified_by` to `document_entries`; grants admins read-only SELECT on document entries/files/storage; adds `admin_list_document_owners()` for the admin UI | ⏳ Not yet applied — run this next |
 | `008_cv_profiles.sql` | Creates `cv_profiles` table (one row per user, autosaved from the CV builder) + RLS | ⏳ Not yet applied — run after 007 |
 | `009_job_alerts.sql` | Creates `job_alerts` table (province/profession alert criteria) + RLS | ⏳ Not yet applied — run after 008 |
+| `010_admin_insert_jobs.sql` | Grants admins INSERT on `jobs` (for the new manual "Add Job" form) | ⏳ Not yet applied — run after 009 |
+| `011_blog.sql` | Creates `blog_posts` table + RLS (public reads published only, admins full CRUD) | ⏳ Not yet applied — run after 010 |
 
 Each file is idempotent-unsafe by design (uses `create table`, not
 `create table if not exists`) — running a file twice on the same database

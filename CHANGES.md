@@ -269,6 +269,98 @@ Nav links, language switcher, and sign-out live in the drawer when open.
 
 ---
 
+## Update — Verified badges everywhere, document merging, 4 CV templates + live preview, navbar color, admin add-job, blog: 2026-08-09 5:15 PM
+
+### 1. Verification badge on all scraped sources
+`sourceTrust.ts` now marks ACBAR, ReliefWeb, jobs.af, and Wazifaha as
+"verified" — all four are the platform's own vetted scraper sources.
+Manually admin-added listings keep their own distinct badge.
+
+### 2. Removed the logo between position and organization
+Dropped the `OrgAvatar` column from the job board table — was sitting as
+a lone icon between the title and employer name for no real reason.
+
+### 3. Loading spinners everywhere
+New `Spinner`/`LoadingBlock` component
+(`src/components/ui/Spinner.tsx`), swapped in for the plain "Loading…"
+text on Job Detail, Saved Jobs, Job Alerts, Admin Jobs, Admin Documents,
+and the Documents vault.
+
+### 4. Upload a single "all my documents" PDF
+New `AllInOneUpload.tsx` section at the top of My Documents — if a user
+already has everything scanned into one PDF, they can upload that
+directly instead of splitting it across the per-type slots. Stored as its
+own `document_entries` row (`document_type = 'all_in_one'`), single-file,
+PDF-only, replace-on-reupload. Counts as "documents complete" on its own
+for the profile-completeness widget.
+
+### 5. Merge & download everything
+New button on the Documents page (`MergeAndDownloadButton.tsx` +
+`mergeDocuments.ts`, using `pdf-lib`) that combines every uploaded
+document — across all types, excluding the all-in-one PDF above — into a
+single downloadable PDF. PDFs are merged page-by-page; images become
+their own page (WEBP auto-converted to PNG first, since pdf-lib can only
+embed JPEG/PNG). Files that fail to merge are skipped and reported rather
+than aborting the whole thing. Because `pdf-lib` is a heavy dependency,
+**the Documents page is now lazy-loaded** (`React.lazy` in `App.tsx`) —
+without this the main bundle grew by ~350KB gzipped for every visitor,
+including ones who never touch the document vault.
+
+### 6. Admin jobs page: layout fix + manual "Add Job"
+- Fixed the card layout — action buttons were overflowing/wrapping badly
+  on narrower widths; now `flex-wrap` with proper stacking on small
+  screens, consistent with the shared button styles used elsewhere.
+- Every job card now has a status-colored left border (not just duplicate
+  groups) — green/gray/red for active/hidden/expired — so the list has
+  visual structure even outside "show duplicates" view.
+- New "Add job" button opens a full manual-entry form → `createManualJob`
+  → inserts with `source = 'manual'`. Needed a new RLS policy since
+  admins previously had SELECT/UPDATE/DELETE but no INSERT on `jobs` —
+  see migration 010.
+
+### 7. CV templates: 2 more + a live preview
+- Added "Minimal" (centered header, thin rules, understated) and
+  "Compact" (dense two-column, no colored block, fits more per page)
+  alongside Classic and Modern — four templates total, `CvTemplate` type
+  updated everywhere.
+- New `CvPreview.tsx`: a scaled-down live HTML approximation of whichever
+  template is selected, updating as the user types, shown next to the
+  form. It's a close visual mirror of each PDF template, not a literal
+  pixel-perfect render of the PDF itself — noted in the UI ("actual PDF
+  may wrap slightly differently").
+- Builder layout widened to a two-column grid (form + sticky preview) on
+  larger screens; template picker is now a 4-up grid.
+
+### 8. Footer contact email
+Was still the placeholder `contact@yourdomain.com` — now
+`support@hamqar.com`.
+
+### 9. Navbar background
+Replaced the diagonal lapis gradient with a solid `--color-ink`
+background — cleaner, more premium-feeling, still on-brand (saffron
+accent border/active-state dots unchanged).
+
+### 10. Blog section
+- New `blog_posts` table (migration 011): plain-text content with
+  blank-line paragraph breaks — deliberately not a rich-text/WYSIWYG
+  editor, both to keep this a reasonably-scoped feature and to avoid
+  storing/rendering arbitrary HTML.
+- Public `/blog` (list) and `/blog/:slug` (detail) pages. Detail page has
+  social sharing: native Web Share API where the browser supports it,
+  plus explicit Facebook/X/WhatsApp buttons and a copy-link button.
+- Admin CRUD at `/admin/blog` (new tab in `AdminNav`): create/edit/delete
+  posts, draft vs. published toggle, auto-slug-from-title (editable),
+  optional cover image URL and author byline.
+- RLS: public can read published posts only; admins get full CRUD
+  (mirrors the `admin_users` pattern used for jobs/documents).
+
+### Docs
+- `README.md`: updated feature list, table list for all of the above
+- `database/migrations/README.md`: added migrations 010 and 011
+- This entry in `CHANGES.md`
+
+---
+
 ## Running it locally
 ```
 npm install

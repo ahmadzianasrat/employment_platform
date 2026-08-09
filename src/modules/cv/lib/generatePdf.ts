@@ -15,6 +15,10 @@ function addWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth
 export function generateCvPdf(cv: CvData, template: CvTemplate = 'classic'): void {
   if (template === 'modern') {
     generateModernTemplate(cv);
+  } else if (template === 'minimal') {
+    generateMinimalTemplate(cv);
+  } else if (template === 'compact') {
+    generateCompactTemplate(cv);
   } else {
     generateClassicTemplate(cv);
   }
@@ -317,4 +321,298 @@ function generateModernTemplate(cv: CvData): void {
 
   const fileName = (cv.fullName || 'cv').trim().replace(/\s+/g, '_').toLowerCase();
   doc.save(`${fileName}_cv_modern.pdf`);
+}
+
+// "Minimal" template: centered header, generous whitespace, thin rules,
+// understated — for people who want the content to speak for itself
+// rather than a colored layout.
+function generateMinimalTemplate(cv: CvData): void {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const LAPIS: [number, number, number] = [27, 75, 107];
+  const INK: [number, number, number] = [16, 27, 45];
+  const MUTED: [number, number, number] = [110, 110, 110];
+  const PAGE_HEIGHT = 297;
+
+  let y = 26;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(20);
+  doc.setTextColor(...INK);
+  doc.text(cv.fullName || 'Your Name', PAGE_WIDTH / 2, y, { align: 'center' });
+  y += 7;
+
+  const contactLine = [cv.email, cv.phone, cv.location].filter(Boolean).join('   ·   ');
+  if (contactLine) {
+    doc.setFontSize(9.5);
+    doc.setTextColor(...MUTED);
+    doc.text(contactLine, PAGE_WIDTH / 2, y, { align: 'center' });
+    y += 6;
+  }
+
+  doc.setDrawColor(...LAPIS);
+  doc.setLineWidth(0.3);
+  doc.line(PAGE_WIDTH / 2 - 20, y, PAGE_WIDTH / 2 + 20, y);
+  y += 10;
+
+  function sectionHeading(label: string) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...LAPIS);
+    doc.text(label.toUpperCase(), MARGIN, y);
+    y += 1.5;
+    doc.setDrawColor(230, 226, 216);
+    doc.setLineWidth(0.2);
+    doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(...INK);
+  }
+
+  function ensureSpace(needed: number) {
+    if (y + needed > PAGE_HEIGHT - MARGIN) {
+      doc.addPage();
+      y = MARGIN;
+    }
+  }
+
+  if (cv.summary.trim()) {
+    ensureSpace(20);
+    sectionHeading('Summary');
+    y = addWrappedText(doc, cv.summary, MARGIN, y, CONTENT_WIDTH, 5.5);
+    y += 8;
+  }
+
+  if (cv.experience.length) {
+    ensureSpace(16);
+    sectionHeading('Experience');
+    for (const exp of cv.experience) {
+      ensureSpace(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text(exp.role || 'Role', MARGIN, y);
+      if (exp.duration) {
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...MUTED);
+        doc.text(exp.duration, PAGE_WIDTH - MARGIN, y, { align: 'right' });
+        doc.setTextColor(...INK);
+      }
+      y += 5;
+      if (exp.employer) {
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(...MUTED);
+        doc.text(exp.employer, MARGIN, y);
+        doc.setTextColor(...INK);
+        y += 5;
+      }
+      doc.setFont('helvetica', 'normal');
+      if (exp.description) y = addWrappedText(doc, exp.description, MARGIN, y, CONTENT_WIDTH, 5);
+      y += 6;
+    }
+  }
+
+  if (cv.education.length) {
+    ensureSpace(16);
+    sectionHeading('Education');
+    for (const edu of cv.education) {
+      ensureSpace(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(edu.degree || 'Degree', MARGIN, y);
+      if (edu.year) {
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...MUTED);
+        doc.text(edu.year, PAGE_WIDTH - MARGIN, y, { align: 'right' });
+        doc.setTextColor(...INK);
+      }
+      y += 5;
+      if (edu.institution) {
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(...MUTED);
+        doc.text(edu.institution, MARGIN, y);
+        doc.setTextColor(...INK);
+        y += 5;
+      }
+      y += 3;
+    }
+  }
+
+  if (cv.skills.trim()) {
+    ensureSpace(14);
+    sectionHeading('Skills');
+    doc.setFont('helvetica', 'normal');
+    y = addWrappedText(doc, cv.skills, MARGIN, y, CONTENT_WIDTH, 5);
+    y += 8;
+  }
+
+  if (cv.languages.length) {
+    ensureSpace(14);
+    sectionHeading('Languages');
+    const proficiencyLabels: Record<string, string> = {
+      native: 'Native', fluent: 'Fluent', advanced: 'Advanced', intermediate: 'Intermediate', basic: 'Basic',
+    };
+    const line = cv.languages
+      .filter((l) => l.name.trim())
+      .map((l) => `${l.name} (${proficiencyLabels[l.proficiency]})`)
+      .join('   ·   ');
+    y = addWrappedText(doc, line, MARGIN, y, CONTENT_WIDTH, 5.5);
+  }
+
+  const fileName = (cv.fullName || 'cv').trim().replace(/\s+/g, '_').toLowerCase();
+  doc.save(`${fileName}_cv_minimal.pdf`);
+}
+
+// "Compact" template: dense two-column layout without a colored block —
+// a thin divider line instead of a filled sidebar, smaller type, tighter
+// spacing. For people with a lot of content who want it on fewer pages.
+function generateCompactTemplate(cv: CvData): void {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const PAGE_HEIGHT = 297;
+  const LAPIS: [number, number, number] = [27, 75, 107];
+  const INK: [number, number, number] = [16, 27, 45];
+  const MUTED: [number, number, number] = [100, 100, 100];
+  const SAFFRON: [number, number, number] = [200, 122, 46];
+
+  const LEFT_WIDTH = 55;
+  const RIGHT_X = MARGIN + LEFT_WIDTH + 8;
+  const RIGHT_WIDTH = PAGE_WIDTH - RIGHT_X - MARGIN;
+
+  let y = MARGIN;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.setTextColor(...INK);
+  doc.text(cv.fullName || 'Your Name', MARGIN, y);
+  y += 6;
+  doc.setDrawColor(...SAFFRON);
+  doc.setLineWidth(0.6);
+  doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y);
+  y += 6;
+
+  const topY = y;
+  let leftY = y;
+  let rightY = y;
+
+  function leftHeading(label: string) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...LAPIS);
+    doc.text(label.toUpperCase(), MARGIN, leftY);
+    leftY += 4.5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...INK);
+  }
+
+  function rightHeading(label: string) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...LAPIS);
+    doc.text(label.toUpperCase(), RIGHT_X, rightY);
+    rightY += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...INK);
+  }
+
+  // Left column: contact, skills, languages, education
+  const contactLines = [cv.email, cv.phone, cv.location, cv.address].filter(Boolean);
+  if (contactLines.length) {
+    leftHeading('Contact');
+    for (const line of contactLines) {
+      const wrapped = doc.splitTextToSize(line, LEFT_WIDTH);
+      doc.text(wrapped, MARGIN, leftY);
+      leftY += wrapped.length * 4;
+    }
+    leftY += 4;
+  }
+
+  if (cv.skills.trim()) {
+    leftHeading('Skills');
+    const wrapped = doc.splitTextToSize(cv.skills, LEFT_WIDTH);
+    doc.text(wrapped, MARGIN, leftY);
+    leftY += wrapped.length * 4 + 4;
+  }
+
+  if (cv.languages.length) {
+    leftHeading('Languages');
+    const proficiencyLabels: Record<string, string> = {
+      native: 'Native', fluent: 'Fluent', advanced: 'Advanced', intermediate: 'Intermediate', basic: 'Basic',
+    };
+    for (const lang of cv.languages) {
+      if (!lang.name.trim()) continue;
+      doc.text(`${lang.name} — ${proficiencyLabels[lang.proficiency]}`, MARGIN, leftY);
+      leftY += 4;
+    }
+    leftY += 4;
+  }
+
+  if (cv.education.length) {
+    leftHeading('Education');
+    for (const edu of cv.education) {
+      doc.setFont('helvetica', 'bold');
+      const degWrapped = doc.splitTextToSize(edu.degree || 'Degree', LEFT_WIDTH);
+      doc.text(degWrapped, MARGIN, leftY);
+      leftY += degWrapped.length * 4;
+      doc.setFont('helvetica', 'normal');
+      if (edu.institution) {
+        const instWrapped = doc.splitTextToSize(edu.institution, LEFT_WIDTH);
+        doc.setTextColor(...MUTED);
+        doc.text(instWrapped, MARGIN, leftY);
+        doc.setTextColor(...INK);
+        leftY += instWrapped.length * 4;
+      }
+      if (edu.year) {
+        doc.setTextColor(...MUTED);
+        doc.text(edu.year, MARGIN, leftY);
+        doc.setTextColor(...INK);
+        leftY += 4;
+      }
+      leftY += 3;
+    }
+  }
+
+  // Right column: summary, experience
+  if (cv.summary.trim()) {
+    rightHeading('Summary');
+    rightY = addWrappedText(doc, cv.summary, RIGHT_X, rightY, RIGHT_WIDTH, 4.6);
+    rightY += 5;
+  }
+
+  if (cv.experience.length) {
+    rightHeading('Experience');
+    for (const exp of cv.experience) {
+      if (rightY > PAGE_HEIGHT - MARGIN - 15) {
+        doc.addPage();
+        rightY = MARGIN;
+      }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      doc.text(exp.role || 'Role', RIGHT_X, rightY);
+      if (exp.duration) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...MUTED);
+        doc.text(exp.duration, PAGE_WIDTH - MARGIN, rightY, { align: 'right' });
+        doc.setTextColor(...INK);
+      }
+      rightY += 4.5;
+      if (exp.employer) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9);
+        doc.setTextColor(...MUTED);
+        doc.text(exp.employer, RIGHT_X, rightY);
+        doc.setTextColor(...INK);
+        rightY += 4.5;
+      }
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      if (exp.description) rightY = addWrappedText(doc, exp.description, RIGHT_X, rightY, RIGHT_WIDTH, 4.4);
+      rightY += 5;
+    }
+  }
+
+  // Vertical divider between columns
+  const columnBottom = Math.max(leftY, rightY, topY + 10);
+  doc.setDrawColor(230, 226, 216);
+  doc.setLineWidth(0.2);
+  doc.line(MARGIN + LEFT_WIDTH + 3, topY - 2, MARGIN + LEFT_WIDTH + 3, Math.min(columnBottom, PAGE_HEIGHT - MARGIN));
+
+  const fileName = (cv.fullName || 'cv').trim().replace(/\s+/g, '_').toLowerCase();
+  doc.save(`${fileName}_cv_compact.pdf`);
 }

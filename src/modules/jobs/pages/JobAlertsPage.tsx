@@ -6,6 +6,7 @@ import type { JobAlert } from '../api/jobAlertsApi';
 import { AFGHAN_PROVINCES } from '../data/provinces';
 import { btnPrimary, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
 import { IconTrash } from '../../../components/ui/icons';
+import { LoadingBlock } from '../../../components/ui/Spinner';
 
 export function JobAlertsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -98,7 +99,7 @@ export function JobAlertsPage() {
 
       <div className="mt-6 space-y-2">
         {loading ? (
-          <p className="text-sm text-(--color-muted)">Loading…</p>
+          <LoadingBlock label="Loading…" />
         ) : alerts.length === 0 ? (
           <p className="text-sm text-(--color-muted)">No alerts yet — add one above.</p>
         ) : (

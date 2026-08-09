@@ -6,6 +6,7 @@ import { loadCvProfile, saveCvProfile } from '../api/cvProfileApi';
 import type { CvTemplate } from '../api/cvProfileApi';
 import { btnPrimary, btnDashed, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
 import { IconDownload, IconPlus, IconTrash, IconCheck } from '../../../components/ui/icons';
+import { CvPreview } from '../components/CvPreview';
 import {
   EMPTY_CV,
   type CvData,
@@ -21,6 +22,13 @@ const PROFICIENCY_LEVELS: { value: LanguageProficiency; labelKey: string }[] = [
   { value: 'advanced', labelKey: 'proficiencyAdvanced' },
   { value: 'intermediate', labelKey: 'proficiencyIntermediate' },
   { value: 'basic', labelKey: 'proficiencyBasic' },
+];
+
+const TEMPLATE_OPTIONS: { value: CvTemplate; labelKey: string; descKey: string }[] = [
+  { value: 'classic', labelKey: 'templateClassic', descKey: 'templateClassicDesc' },
+  { value: 'modern', labelKey: 'templateModern', descKey: 'templateModernDesc' },
+  { value: 'minimal', labelKey: 'templateMinimal', descKey: 'templateMinimalDesc' },
+  { value: 'compact', labelKey: 'templateCompact', descKey: 'templateCompactDesc' },
 ];
 
 function makeId() {
@@ -128,7 +136,7 @@ export function CvBuilderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
+    <div className="mx-auto max-w-6xl px-6 py-10">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-semibold text-(--color-ink)">{tr('cv', 'title')}</h1>
@@ -154,31 +162,28 @@ export function CvBuilderPage() {
       )}
 
       {/* Template selector */}
-      <div className="mt-6 flex gap-3">
-        {(['classic', 'modern'] as CvTemplate[]).map((t) => (
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {TEMPLATE_OPTIONS.map((t) => (
           <button
-            key={t}
-            onClick={() => setTemplate(t)}
-            className={`flex-1 rounded-(--radius-lg) border-2 p-3 text-left transition-colors ${
-              template === t
+            key={t.value}
+            onClick={() => setTemplate(t.value)}
+            className={`rounded-(--radius-lg) border-2 p-3 text-left transition-colors ${
+              template === t.value
                 ? 'border-(--color-lapis) bg-(--color-lapis)/5'
                 : 'border-(--color-line) hover:border-(--color-lapis)/40'
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-(--color-ink)">
-                {t === 'classic' ? tr('cv', 'templateClassic') : tr('cv', 'templateModern')}
-              </span>
-              {template === t && <IconCheck className="h-4 w-4 text-(--color-lapis)" />}
+              <span className="text-sm font-semibold text-(--color-ink)">{tr('cv', t.labelKey)}</span>
+              {template === t.value && <IconCheck className="h-4 w-4 shrink-0 text-(--color-lapis)" />}
             </div>
-            <p className="mt-1 text-xs text-(--color-muted)">
-              {t === 'classic' ? tr('cv', 'templateClassicDesc') : tr('cv', 'templateModernDesc')}
-            </p>
+            <p className="mt-1 text-xs text-(--color-muted)">{tr('cv', t.descKey)}</p>
           </button>
         ))}
       </div>
 
-      <div className="mt-8 space-y-6 pb-24">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
+        <div className="space-y-6 pb-24">
         {/* Personal info */}
         <section className="rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-5">
           <h2 className="font-display text-lg font-semibold text-(--color-lapis)">
@@ -414,11 +419,14 @@ export function CvBuilderPage() {
           </div>
         </section>
 
+        </div>
+
+        <CvPreview cv={cv} template={template} />
       </div>
 
       {/* Sticky so the primary action stays reachable while scrolling a long form, especially on mobile */}
       <div className="fixed inset-x-0 bottom-0 border-t border-(--color-line) bg-(--color-paper-raised)/95 px-6 py-3 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-3xl justify-end">
+        <div className="mx-auto flex max-w-6xl justify-end">
           <button onClick={handleDownload} className={`${btnPrimary} px-6 py-3`}>
             <IconDownload className="h-4 w-4" />
             {tr('cv', 'downloadPdf')}

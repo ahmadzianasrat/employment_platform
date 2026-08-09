@@ -6,7 +6,6 @@ import { useRealtimeJobs } from '../hooks/useRealtimeJobs';
 import { useJobAlertMatches } from '../hooks/useJobAlertMatches';
 import { JobAlertToastStack } from '../components/JobAlertToast';
 import { LocationFilter } from '../components/LocationFilter';
-import { OrgAvatar } from '../components/OrgAvatar';
 import { SourceBadge } from '../components/SourceBadge';
 import { JobTableSkeleton } from '../components/JobTableSkeleton';
 import { ProfileCompletionWidget } from '../../profile/components/ProfileCompletionWidget';
@@ -165,7 +164,6 @@ export function JobBoardPage() {
                     <tr className="bg-(--color-lapis) text-left text-xs font-semibold uppercase tracking-wide text-white">
                       <th className="px-3 py-3">{tr('jobBoard', 'colId')}</th>
                       <th className="px-3 py-3">{tr('jobBoard', 'colPosition')}</th>
-                      <th className="px-3 py-3"></th>
                       <th className="px-3 py-3">{tr('jobBoard', 'colOrganization')}</th>
                       <th className="px-3 py-3">{tr('jobBoard', 'colProfession')}</th>
                       <th className="px-3 py-3">{tr('jobBoard', 'colDeadline')}</th>
@@ -199,9 +197,6 @@ export function JobBoardPage() {
                                 New
                               </span>
                             )}
-                          </td>
-                          <td className="px-3 py-3">
-                            <OrgAvatar name={job.employer} />
                           </td>
                           <td className="max-w-[160px] truncate px-3 py-3" title={job.employer ?? undefined}>
                             {job.employer ?? '—'}

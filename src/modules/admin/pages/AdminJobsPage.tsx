@@ -1,10 +1,34 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useIsAdmin } from '../hooks/useIsAdmin';
-import { fetchAllJobsForAdmin, updateJob, updateJobStatus, deleteJob } from '../api/adminJobsApi';
+import {
+  fetchAllJobsForAdmin,
+  updateJob,
+  updateJobStatus,
+  deleteJob,
+  createManualJob,
+} from '../api/adminJobsApi';
+import type { NewManualJob } from '../api/adminJobsApi';
 import { findDuplicateGroups } from '../lib/findDuplicates';
 import { AdminNav } from '../components/AdminNav';
 import type { Job } from '../../jobs/types/job';
+import { LoadingBlock } from '../../../components/ui/Spinner';
+import { btnPrimary, btnSecondarySm, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
+import { IconPlus } from '../../../components/ui/icons';
+
+const EMPTY_NEW_JOB: NewManualJob = {
+  title: '',
+  employer: '',
+  location: '',
+  deadline_raw: '',
+  expires_on: '',
+  profession: '',
+  gender: '',
+  description: '',
+  education: '',
+  experience: '',
+  source_url: '',
+};
 
 type StatusFilter = 'all' | 'active' | 'hidden' | 'expired';
 const PAGE_SIZE = 20;
@@ -18,6 +42,10 @@ export function AdminJobsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Partial<Job>>({});
   const [page, setPage] = useState(1);
+  const [addingNew, setAddingNew] = useState(false);
+  const [newJob, setNewJob] = useState<NewManualJob>(EMPTY_NEW_JOB);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -46,6 +74,11 @@ export function AdminJobsPage() {
   }, [duplicateGroups]);
 
   const groupColors = ['#C87A2E', '#1B4B6B', '#3C7A5C', '#A83A3A', '#6B4C9A'];
+  const statusColors: Record<Job['status'], string> = {
+    active: '#3C7A5C',
+    hidden: '#8A8A8A',
+    expired: '#A83A3A',
+  };
 
   const visibleJobs = useMemo(() => {
     let list = jobs;
@@ -95,6 +128,36 @@ export function AdminJobsPage() {
     setEditingId(null);
   }
 
+  async function handleCreateJob() {
+    if (!newJob.title.trim()) {
+      setCreateError('Title is required.');
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
+    const { error } = await createManualJob({
+      ...newJob,
+      employer: newJob.employer?.trim() || null,
+      location: newJob.location?.trim() || null,
+      deadline_raw: newJob.deadline_raw?.trim() || null,
+      expires_on: newJob.expires_on?.trim() || null,
+      profession: newJob.profession?.trim() || null,
+      gender: newJob.gender?.trim() || null,
+      description: newJob.description?.trim() || null,
+      education: newJob.education?.trim() || null,
+      experience: newJob.experience?.trim() || null,
+      source_url: newJob.source_url?.trim() || null,
+    });
+    setCreating(false);
+    if (error) {
+      setCreateError(error);
+      return;
+    }
+    setNewJob(EMPTY_NEW_JOB);
+    setAddingNew(false);
+    load();
+  }
+
   const totalDuplicateJobs = Array.from(duplicateGroupColor.keys()).length;
 
   return (
@@ -131,26 +194,133 @@ export function AdminJobsPage() {
 
         <button
           onClick={load}
-          className="ml-auto rounded-(--radius-md) border border-(--color-line) px-3 py-1.5 text-sm font-medium text-(--color-lapis) hover:bg-(--color-lapis)/5"
+          className="rounded-(--radius-md) border border-(--color-line) px-3 py-1.5 text-sm font-medium text-(--color-lapis) hover:bg-(--color-lapis)/5"
         >
           Refresh
         </button>
+
+        <button onClick={() => setAddingNew((v) => !v)} className={`ml-auto ${btnPrimary}`}>
+          <IconPlus />
+          Add job
+        </button>
       </div>
 
+      {addingNew && (
+        <div className="mt-4 rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-4">
+          <h2 className="text-sm font-semibold text-(--color-ink)">New manual job listing</h2>
+          <div className="mt-3 space-y-2">
+            <input
+              className="w-full rounded border border-(--color-line) px-2 py-1.5 text-sm font-semibold"
+              placeholder="Job title *"
+              value={newJob.title}
+              onChange={(e) => setNewJob((d) => ({ ...d, title: e.target.value }))}
+            />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <input
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                placeholder="Employer"
+                value={newJob.employer ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, employer: e.target.value }))}
+              />
+              <input
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                placeholder="Location"
+                value={newJob.location ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, location: e.target.value }))}
+              />
+              <input
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                placeholder="Deadline (display text)"
+                value={newJob.deadline_raw ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, deadline_raw: e.target.value }))}
+              />
+              <input
+                type="date"
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                value={newJob.expires_on ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, expires_on: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <input
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                placeholder="Profession"
+                value={newJob.profession ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, profession: e.target.value }))}
+              />
+              <input
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                placeholder="Gender (optional)"
+                value={newJob.gender ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, gender: e.target.value }))}
+              />
+              <input
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                placeholder="Apply link (URL or mailto:, optional)"
+                value={newJob.source_url ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, source_url: e.target.value }))}
+              />
+            </div>
+            <textarea
+              className="w-full rounded border border-(--color-line) px-2 py-1.5 text-sm"
+              placeholder="Description"
+              rows={3}
+              value={newJob.description ?? ''}
+              onChange={(e) => setNewJob((d) => ({ ...d, description: e.target.value }))}
+            />
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <textarea
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                placeholder="Education requirements"
+                rows={2}
+                value={newJob.education ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, education: e.target.value }))}
+              />
+              <textarea
+                className="rounded border border-(--color-line) px-2 py-1.5 text-sm"
+                placeholder="Experience requirements"
+                rows={2}
+                value={newJob.experience ?? ''}
+                onChange={(e) => setNewJob((d) => ({ ...d, experience: e.target.value }))}
+              />
+            </div>
+
+            {createError && <p className="text-sm text-(--color-danger)">{createError}</p>}
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button onClick={handleCreateJob} disabled={creating} className={btnPrimary}>
+                {creating ? 'Publishing…' : 'Publish job'}
+              </button>
+              <button
+                onClick={() => {
+                  setAddingNew(false);
+                  setNewJob(EMPTY_NEW_JOB);
+                  setCreateError(null);
+                }}
+                className={btnSecondarySm}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
-        <p className="mt-8 text-(--color-muted)">Loading…</p>
+        <LoadingBlock label="Loading jobs…" />
       ) : (
         <div className="mt-6 space-y-2">
           {pageJobs.map((job) => {
             const groupIdx = duplicateGroupColor.get(job.id);
-            const borderColor = groupIdx !== undefined ? groupColors[groupIdx % groupColors.length] : undefined;
+            const borderColor =
+              groupIdx !== undefined ? groupColors[groupIdx % groupColors.length] : statusColors[job.status];
             const isEditing = editingId === job.id;
 
             return (
               <div
                 key={job.id}
-                className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) p-4"
-                style={borderColor ? { borderLeft: `4px solid ${borderColor}` } : undefined}
+                className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) p-4 shadow-sm transition-shadow hover:shadow-md"
+                style={{ borderLeft: `4px solid ${borderColor}` }}
               >
                 {isEditing ? (
                   <div className="space-y-2">
@@ -207,31 +377,27 @@ export function AdminJobsPage() {
                         onChange={(e) => setEditDraft((d) => ({ ...d, gender: e.target.value || null }))}
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => saveEdit(job.id)}
-                        className="rounded bg-(--color-lapis) px-3 py-1 text-xs font-semibold text-white"
-                      >
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={() => saveEdit(job.id)} className={btnPrimary}>
                         Save
                       </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="rounded border border-(--color-line) px-3 py-1 text-xs font-medium"
-                      >
+                      <button onClick={() => setEditingId(null)} className={btnSecondarySm}>
                         Cancel
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold text-(--color-ink)">{job.title}</h3>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
                             job.status === 'active'
                               ? 'bg-(--color-success)/10 text-(--color-success)'
-                              : 'bg-(--color-muted)/10 text-(--color-muted)'
+                              : job.status === 'expired'
+                                ? 'bg-(--color-danger)/10 text-(--color-danger)'
+                                : 'bg-(--color-muted)/10 text-(--color-muted)'
                           }`}
                         >
                           {job.status}
@@ -240,28 +406,23 @@ export function AdminJobsPage() {
                           {job.source_label ?? job.source}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-sm text-(--color-muted)">
-                        {job.employer} {job.location && `· ${job.location}`} {job.deadline_raw && `· deadline: ${job.deadline_raw}`} {job.profession && `· ${job.profession}`} {job.gender && `· ${job.gender}`}
-                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-(--color-muted)">
+                        {job.employer && <span>{job.employer}</span>}
+                        {job.location && <span>📍 {job.location}</span>}
+                        {job.deadline_raw && <span>⏳ {job.deadline_raw}</span>}
+                        {job.profession && <span>{job.profession}</span>}
+                        {job.gender && <span>{job.gender}</span>}
+                      </div>
                     </div>
 
-                    <div className="flex shrink-0 gap-2">
-                      <button
-                        onClick={() => startEdit(job)}
-                        className="rounded border border-(--color-line) px-3 py-1 text-xs font-medium text-(--color-ink) hover:bg-black/5"
-                      >
+                    <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+                      <button onClick={() => startEdit(job)} className={btnSecondarySm}>
                         Edit
                       </button>
-                      <button
-                        onClick={() => handleToggleStatus(job)}
-                        className="rounded border border-(--color-line) px-3 py-1 text-xs font-medium text-(--color-ink) hover:bg-black/5"
-                      >
+                      <button onClick={() => handleToggleStatus(job)} className={btnSecondarySm}>
                         {job.status === 'active' ? 'Hide' : 'Unhide'}
                       </button>
-                      <button
-                        onClick={() => handleDelete(job)}
-                        className="rounded border border-(--color-danger)/40 px-3 py-1 text-xs font-medium text-(--color-danger) hover:bg-(--color-danger)/5"
-                      >
+                      <button onClick={() => handleDelete(job)} className={btnDangerOutlineSm}>
                         Delete
                       </button>
                     </div>

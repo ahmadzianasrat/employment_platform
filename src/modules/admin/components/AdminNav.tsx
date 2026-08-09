@@ -16,6 +16,9 @@ export function AdminNav() {
       <NavLink to="/admin/documents" className={tabClass}>
         Documents
       </NavLink>
+      <NavLink to="/admin/blog" className={tabClass}>
+        Blog
+      </NavLink>
     </div>
   );
 }

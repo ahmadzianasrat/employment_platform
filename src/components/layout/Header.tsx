@@ -36,10 +36,7 @@ export function Header() {
 
   return (
     <header
-      className="relative border-b-2 border-(--color-saffron) shadow-[0_1px_0_rgba(0,0,0,0.15)]"
-      style={{
-        background: 'linear-gradient(135deg, var(--color-lapis) 0%, var(--color-lapis-dark) 100%)',
-      }}
+      className="relative border-b-2 border-(--color-saffron) bg-(--color-ink) shadow-[0_1px_0_rgba(0,0,0,0.15)]"
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-3.5 sm:px-6">
         <NavLink to="/" className="flex items-center gap-2.5" onClick={closeMobile}>
@@ -69,6 +66,16 @@ export function Header() {
                     <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                   )}
                   {tr('nav', 'cvBuilder')}
+                </>
+              )}
+            </NavLink>
+            <NavLink to="/blog" className={linkClass}>
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
+                  )}
+                  Blog
                 </>
               )}
             </NavLink>
@@ -172,6 +179,9 @@ export function Header() {
             </NavLink>
             <NavLink to="/cv-builder" className={mobileLinkClass} onClick={closeMobile}>
               {tr('nav', 'cvBuilder')}
+            </NavLink>
+            <NavLink to="/blog" className={mobileLinkClass} onClick={closeMobile}>
+              Blog
             </NavLink>
             {user && (
               <NavLink to="/saved" className={mobileLinkClass} onClick={closeMobile}>

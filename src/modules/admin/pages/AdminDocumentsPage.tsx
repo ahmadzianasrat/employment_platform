@@ -10,6 +10,7 @@ import { AdminNav } from '../components/AdminNav';
 import { DOCUMENT_TYPES } from '../../documents/data/documentTypes';
 import { btnLapisOutlineSm, btnSecondarySm } from '../../../components/ui/buttonStyles';
 import { IconDownload, IconEye, IconCheck, IconShieldCheck } from '../../../components/ui/icons';
+import { LoadingBlock } from '../../../components/ui/Spinner';
 
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
@@ -107,6 +108,7 @@ export function AdminDocumentsPage() {
   if (!isAdmin) return <Navigate to="/" replace />;
 
   function typeLabel(documentType: string): string {
+    if (documentType === 'all_in_one') return 'All-in-one PDF';
     const config = DOCUMENT_TYPES.find((t) => t.key === documentType);
     return config ? tr('documents', config.labelKey) : documentType;
   }
@@ -151,7 +153,7 @@ export function AdminDocumentsPage() {
       </div>
 
       {error && <p className="mt-4 text-sm text-(--color-danger)">{error}</p>}
-      {loading && <p className="mt-6 text-sm text-(--color-muted)">Loading…</p>}
+      {loading && <LoadingBlock label="Loading documents…" />}
 
       {!loading && grouped.length === 0 && (
         <p className="mt-8 text-sm text-(--color-muted)">No documents match your filters.</p>

@@ -2,7 +2,7 @@ import { supabase } from '../../../lib/supabase/client';
 import type { CvData } from '../types/cv';
 import { EMPTY_CV } from '../types/cv';
 
-export type CvTemplate = 'classic' | 'modern';
+export type CvTemplate = 'classic' | 'modern' | 'minimal' | 'compact';
 
 export interface CvProfile {
   data: CvData;

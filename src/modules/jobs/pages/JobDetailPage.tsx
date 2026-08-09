@@ -4,6 +4,7 @@ import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { fetchJobById } from '../api/jobsApi';
 import type { Job } from '../types/job';
 import { SaveJobButton } from '../components/SaveJobButton';
+import { LoadingBlock } from '../../../components/ui/Spinner';
 
 export function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,7 +26,7 @@ export function JobDetailPage() {
   }, [id]);
 
   if (loading) {
-    return <p className="mx-auto max-w-3xl px-6 py-14 text-(--color-muted)">{tr('common', 'loading')}</p>;
+    return <LoadingBlock label={tr('common', 'loading')} className="mx-auto max-w-3xl px-6" />;
   }
 
   if (!job) {

@@ -3,6 +3,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { useRealtimeSavedJobs } from '../hooks/useRealtimeSavedJobs';
 import { JobCard } from '../components/JobCard';
+import { LoadingBlock } from '../../../components/ui/Spinner';
 
 export function SavedJobsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -20,7 +21,7 @@ export function SavedJobsPage() {
 
       <div className="mt-6">
         {loading ? (
-          <p className="text-(--color-muted)">{tr('common', 'loading')}</p>
+          <LoadingBlock label={tr('common', 'loading')} />
         ) : jobs.length === 0 ? (
           <p className="text-(--color-muted)">{tr('jobBoard', 'noSavedJobs')}</p>
         ) : (

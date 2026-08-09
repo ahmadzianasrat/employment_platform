@@ -72,8 +72,9 @@ Supabase's SQL Editor, not automatically.
 
 Current tables: `jobs`, `saved_jobs`, `admin_users`, `document_entries`
 (now with `verified`/`verified_at`/`verified_by`), `document_files`,
-`cv_profiles`, `job_alerts`. Storage buckets: `documents` (private to the
-uploading user, plus read-only access for admins as of migration 007).
+`cv_profiles`, `job_alerts`, `blog_posts`. Storage buckets: `documents`
+(private to the uploading user, plus read-only access for admins as of
+migration 007).
 
 ## Deployment
 See `DEPLOYMENT.md` for the full walkthrough. Short version:
@@ -142,11 +143,13 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
   listings), pagination (20/page), realtime updates (no refresh needed)
 - Job detail page
 - CV builder with PDF export (personal info, education, experience,
-  skills, languages with native-language highlighting, address), two
-  visual templates (Classic single-column, Modern sidebar), autosaved to
-  Supabase per signed-in user (`cv_profiles` table) so it survives
-  refreshes and works across devices — signed-out visitors can still use
-  the builder, it just doesn't persist
+  skills, languages with native-language highlighting, address), **four**
+  visual templates (Classic, Modern sidebar, Minimal centered, Compact
+  two-column) with a **live scaled preview** next to the form so users can
+  see the layout before downloading, autosaved to Supabase per signed-in
+  user (`cv_profiles` table) so it survives refreshes and works across
+  devices — signed-out visitors can still use the builder, it just
+  doesn't persist
 - Auth (email/password via Supabase Auth), saved/bookmarked jobs
 - Document vault: upload ID card, passport, driving license, TIN, school
   diploma (single-entry types) and university diplomas, work experience,
@@ -157,13 +160,26 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
   before upload to cut Storage usage — PDFs are uploaded as-is (real PDF
   compression needs a proper library, not a canvas trick — see
   `src/lib/utils/compressImage.ts`). Users can view *and download* each
-  uploaded file from My Documents.
+  uploaded file from My Documents. Also supports uploading a **single
+  combined PDF** if the user already has everything scanned into one file
+  (`AllInOneUpload.tsx`, separate from the per-type slots), and a
+  **merge & download** button that combines every per-type document into
+  one downloadable PDF (via `pdf-lib`, images auto-converted to
+  embeddable formats) — this page is lazy-loaded since `pdf-lib` is heavy.
 - Admin panel: view/edit/hide/delete jobs, cross-source duplicate
-  detection (flags candidates, never auto-merges), pagination (20/page).
-  Also includes **read-only document review** (`/admin/documents`):
-  admins can view/download any user's uploaded documents and mark entries
-  as "verified", but cannot edit, delete, or upload on a user's behalf —
-  see migration 007.
+  detection (flags candidates, never auto-merges), pagination (20/page),
+  and a manual "Add Job" form (source = `manual`, requires migration 010
+  for the admin INSERT policy). Also includes **read-only document
+  review** (`/admin/documents`): admins can view/download any user's
+  uploaded documents and mark entries as "verified", but cannot edit,
+  delete, or upload on a user's behalf — see migration 007. And an
+  **admin blog CRUD page** (`/admin/blog`) — see the Blog section below.
+- Blog (`/blog`, `/blog/:slug`): admin-authored posts (plain text with
+  blank-line paragraph breaks — no rich-text editor, deliberately, to
+  keep scope sane and avoid storing/rendering arbitrary HTML), draft vs.
+  published state, optional cover image URL, social sharing (native Web
+  Share API where available, plus explicit Facebook/X/WhatsApp/copy-link
+  buttons) on each post. See migration 011.
 - PHP scraper → Supabase sync (one-way push at discovery, AI fields
   populate at publish time)
 - Mobile-first responsive header with a hamburger menu — sign-in is

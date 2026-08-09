@@ -138,6 +138,18 @@ export const STRINGS = {
       ps: 'د اړخي پټي ډیزاین د رنګ سره',
       da: 'طرح نوار کناری با رنگ',
     },
+    templateMinimal: { en: 'Minimal', ps: 'ساده', da: 'مینیمال' },
+    templateMinimalDesc: {
+      en: 'Centered header, understated and clean',
+      ps: 'مرکزي سرلیک، ساده او پاک',
+      da: 'سربرگ وسط‌چین، ساده و تمیز',
+    },
+    templateCompact: { en: 'Compact', ps: 'فشرده', da: 'فشرده' },
+    templateCompactDesc: {
+      en: 'Dense two-column layout, fits more on one page',
+      ps: 'دوه کالمه، ډیر مینه یوه پاڼه کې ځایوي',
+      da: 'دو ستونه فشرده، محتوای بیشتر در یک صفحه',
+    },
     sectionLanguages: { en: 'Languages', ps: 'ژبې', da: 'زبان‌ها' },
     languageName: { en: 'Language', ps: 'ژبه', da: 'زبان' },
     proficiency: { en: 'Proficiency', ps: 'مهارت کچه', da: 'سطح مهارت' },
@@ -195,6 +207,41 @@ export const STRINGS = {
     uploading: { en: 'Uploading…', ps: 'اپلوډېږي…', da: 'در حال آپلود…' },
     fileTooLarge: { en: 'File is too large (max 15MB).', ps: 'فایل ډیر لوی دی (اعظمي 15MB).', da: 'فایل خیلی بزرگ است (حداکثر 15MB).' },
     invalidFileType: { en: 'Only PDF, JPG, PNG, or WEBP files are accepted.', ps: 'یوازې PDF، JPG، PNG، یا WEBP فایلونه منل کیږي.', da: 'فقط فایل‌های PDF، JPG، PNG یا WEBP پذیرفته می‌شوند.' },
+    allInOneTitle: {
+      en: 'Already have everything in one PDF?',
+      ps: 'ایا ستاسو ټول اسناد يو PDF کې دي؟',
+      da: 'آیا همه اسناد شما در یک PDF است؟',
+    },
+    allInOneSubtitle: {
+      en: 'If you already have a single PDF with all your documents combined, upload it here instead of splitting it up.',
+      ps: 'که ستاسو یو PDF شتون لري چې ټول اسناد پکې یوځای دي، دلته یې اپلوډ کړئ.',
+      da: 'اگر یک فایل PDF دارید که همه اسناد شما در آن ترکیب شده، به‌جای تقسیم آن، اینجا آپلود کنید.',
+    },
+    allInOneUpload: { en: 'Upload combined PDF', ps: 'یوځای PDF اپلوډ کړئ', da: 'آپلود PDF ترکیبی' },
+    allInOneReplace: { en: 'Replace file', ps: 'فایل بدل کړئ', da: 'جایگزینی فایل' },
+    allInOnePdfOnly: {
+      en: 'This slot only accepts a single PDF file.',
+      ps: 'دلته یوازې یو PDF فایل منل کیږي.',
+      da: 'اینجا فقط یک فایل PDF پذیرفته می‌شود.',
+    },
+    mergeDownloadTitle: { en: 'Merge & download everything', ps: 'ټول یوځای کړئ او ډاونلوډ یې کړئ', da: 'ادغام و دانلود همه' },
+    mergeDownloadHint: {
+      en: 'Combines every document you\u2019ve uploaded below into a single PDF you can download (the combined PDF above is not included).',
+      ps: 'ستاسو ټول لاندې اپلوډ شوي اسناد په یو PDF کې یوځای کوي (پورتنی یوځای شوی PDF پکې نه شامل دی).',
+      da: 'همه اسنادی که در پایین آپلود کرده‌اید را در یک PDF ترکیب می‌کند (PDF ترکیبی بالا شامل نمی‌شود).',
+    },
+    mergeDownloadButton: { en: 'Merge & download', ps: 'یوځای کول او ډاونلوډ', da: 'ادغام و دانلود' },
+    merging: { en: 'Merging…', ps: 'یوځای کیږي…', da: 'در حال ادغام…' },
+    mergeNoFiles: {
+      en: 'Upload at least one document below before merging.',
+      ps: 'د یوځای کولو دمخه لږ تر لږه یو سند اپلوډ کړئ.',
+      da: 'قبل از ادغام، حداقل یک سند آپلود کنید.',
+    },
+    mergeSkippedSome: {
+      en: 'Done, but some files could not be included: ',
+      ps: 'بشپړ شو، خو ځینې فایلونه شامل نشول: ',
+      da: 'انجام شد، اما برخی فایل‌ها گنجانده نشدند: ',
+    },
   },
   footer: {
     about: {
