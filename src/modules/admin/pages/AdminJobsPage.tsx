@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useIsAdmin } from '../hooks/useIsAdmin';
 import { fetchAllJobsForAdmin, updateJob, updateJobStatus, deleteJob } from '../api/adminJobsApi';
 import { findDuplicateGroups } from '../lib/findDuplicates';
+import { AdminNav } from '../components/AdminNav';
 import type { Job } from '../../jobs/types/job';
 
 type StatusFilter = 'all' | 'active' | 'hidden' | 'expired';
@@ -98,6 +99,7 @@ export function AdminJobsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
+      <AdminNav />
       <h1 className="font-display text-2xl font-semibold text-(--color-ink)">Admin — Job Listings</h1>
       <p className="mt-1 text-sm text-(--color-muted)">
         {jobs.length} total listings

@@ -15,5 +15,8 @@ export interface DocumentEntry {
   document_type: string;
   label: string | null;
   created_at: string;
+  verified: boolean;
+  verified_at: string | null;
+  verified_by: string | null;
   files: DocumentFile[];
 }

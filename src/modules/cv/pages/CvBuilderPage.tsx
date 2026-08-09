@@ -1,6 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
+import { useAuth } from '../../../lib/auth/AuthContext';
 import { generateCvPdf } from '../lib/generatePdf';
+import { loadCvProfile, saveCvProfile } from '../api/cvProfileApi';
+import type { CvTemplate } from '../api/cvProfileApi';
+import { btnPrimary, btnDashed, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
+import { IconDownload, IconPlus, IconTrash, IconCheck } from '../../../components/ui/icons';
 import {
   EMPTY_CV,
   type CvData,
@@ -28,7 +33,43 @@ const labelClass = 'mb-1 block text-sm font-medium text-(--color-ink)';
 
 export function CvBuilderPage() {
   const { tr } = useLanguage();
+  const { user } = useAuth();
   const [cv, setCv] = useState<CvData>(EMPTY_CV);
+  const [template, setTemplate] = useState<CvTemplate>('classic');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const loadedRef = useRef(false);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load any previously-saved CV once we know who's signed in.
+  useEffect(() => {
+    if (!user) {
+      loadedRef.current = true;
+      return;
+    }
+    loadedRef.current = false;
+    loadCvProfile(user.id).then((profile) => {
+      if (profile) {
+        setCv(profile.data);
+        setTemplate(profile.template);
+      }
+      loadedRef.current = true;
+    });
+  }, [user]);
+
+  // Autosave, debounced — skips the load that just happened above so we
+  // don't immediately re-save the data we just fetched.
+  useEffect(() => {
+    if (!user || !loadedRef.current) return;
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    setSaveStatus('saving');
+    saveTimeoutRef.current = setTimeout(() => {
+      saveCvProfile(user.id, { data: cv, template }).then(() => setSaveStatus('saved'));
+    }, 1200);
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cv, template, user]);
 
   function updateField<K extends keyof CvData>(key: K, value: CvData[K]) {
     setCv((prev) => ({ ...prev, [key]: value }));
@@ -83,17 +124,63 @@ export function CvBuilderPage() {
   }
 
   function handleDownload() {
-    generateCvPdf(cv);
+    generateCvPdf(cv, template);
   }
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="font-display text-2xl font-semibold text-(--color-ink)">{tr('cv', 'title')}</h1>
-      <p className="mt-1 text-(--color-muted)">{tr('cv', 'subtitle')}</p>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-(--color-ink)">{tr('cv', 'title')}</h1>
+          <p className="mt-1 text-(--color-muted)">{tr('cv', 'subtitle')}</p>
+        </div>
+        {user && (
+          <span className="mt-1 text-xs text-(--color-muted)">
+            {saveStatus === 'saving' && tr('cv', 'saving')}
+            {saveStatus === 'saved' && (
+              <span className="inline-flex items-center gap-1 text-(--color-success)">
+                <IconCheck className="h-3 w-3" />
+                {tr('cv', 'saved')}
+              </span>
+            )}
+          </span>
+        )}
+      </div>
 
-      <div className="mt-8 space-y-8">
+      {!user && (
+        <p className="mt-3 rounded-(--radius-md) border border-(--color-line) bg-(--color-lapis)/5 px-4 py-2.5 text-sm text-(--color-muted)">
+          {tr('cv', 'signInToSaveHint')}
+        </p>
+      )}
+
+      {/* Template selector */}
+      <div className="mt-6 flex gap-3">
+        {(['classic', 'modern'] as CvTemplate[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTemplate(t)}
+            className={`flex-1 rounded-(--radius-lg) border-2 p-3 text-left transition-colors ${
+              template === t
+                ? 'border-(--color-lapis) bg-(--color-lapis)/5'
+                : 'border-(--color-line) hover:border-(--color-lapis)/40'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-(--color-ink)">
+                {t === 'classic' ? tr('cv', 'templateClassic') : tr('cv', 'templateModern')}
+              </span>
+              {template === t && <IconCheck className="h-4 w-4 text-(--color-lapis)" />}
+            </div>
+            <p className="mt-1 text-xs text-(--color-muted)">
+              {t === 'classic' ? tr('cv', 'templateClassicDesc') : tr('cv', 'templateModernDesc')}
+            </p>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-8 space-y-6 pb-24">
         {/* Personal info */}
-        <section>
+        <section className="rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-5">
           <h2 className="font-display text-lg font-semibold text-(--color-lapis)">
             {tr('cv', 'sectionPersonal')}
           </h2>
@@ -153,7 +240,7 @@ export function CvBuilderPage() {
         </section>
 
         {/* Experience */}
-        <section>
+        <section className="rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-5">
           <h2 className="font-display text-lg font-semibold text-(--color-lapis)">
             {tr('cv', 'sectionExperience')}
           </h2>
@@ -196,25 +283,21 @@ export function CvBuilderPage() {
                     onChange={(e) => updateExperience(exp.id, { description: e.target.value })}
                   />
                 </div>
-                <button
-                  onClick={() => removeExperience(exp.id)}
-                  className="mt-3 text-xs font-medium text-(--color-danger) hover:underline"
-                >
+                <button onClick={() => removeExperience(exp.id)} className={`mt-3 ${btnDangerOutlineSm}`}>
+                  <IconTrash />
                   {tr('cv', 'remove')}
                 </button>
               </div>
             ))}
-            <button
-              onClick={addExperience}
-              className="text-sm font-medium text-(--color-lapis) hover:underline"
-            >
+            <button onClick={addExperience} className={btnDashed}>
+              <IconPlus />
               {tr('cv', 'addExperience')}
             </button>
           </div>
         </section>
 
         {/* Education */}
-        <section>
+        <section className="rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-5">
           <h2 className="font-display text-lg font-semibold text-(--color-lapis)">
             {tr('cv', 'sectionEducation')}
           </h2>
@@ -247,25 +330,21 @@ export function CvBuilderPage() {
                     />
                   </div>
                 </div>
-                <button
-                  onClick={() => removeEducation(edu.id)}
-                  className="mt-3 text-xs font-medium text-(--color-danger) hover:underline"
-                >
+                <button onClick={() => removeEducation(edu.id)} className={`mt-3 ${btnDangerOutlineSm}`}>
+                  <IconTrash />
                   {tr('cv', 'remove')}
                 </button>
               </div>
             ))}
-            <button
-              onClick={addEducation}
-              className="text-sm font-medium text-(--color-lapis) hover:underline"
-            >
+            <button onClick={addEducation} className={btnDashed}>
+              <IconPlus />
               {tr('cv', 'addEducation')}
             </button>
           </div>
         </section>
 
         {/* Skills */}
-        <section>
+        <section className="rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-5">
           <h2 className="font-display text-lg font-semibold text-(--color-lapis)">
             {tr('cv', 'sectionSkills')}
           </h2>
@@ -279,7 +358,7 @@ export function CvBuilderPage() {
         </section>
 
         {/* Languages */}
-        <section>
+        <section className="rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-5">
           <h2 className="font-display text-lg font-semibold text-(--color-lapis)">
             {tr('cv', 'sectionLanguages')}
           </h2>
@@ -321,30 +400,30 @@ export function CvBuilderPage() {
                     </span>
                   )}
 
-                  <button
-                    onClick={() => removeLanguage(lang.id)}
-                    className="ml-auto text-xs font-medium text-(--color-danger) hover:underline"
-                  >
+                  <button onClick={() => removeLanguage(lang.id)} className={`ml-auto ${btnDangerOutlineSm}`}>
+                    <IconTrash />
                     {tr('cv', 'remove')}
                   </button>
                 </div>
               );
             })}
-            <button
-              onClick={addLanguage}
-              className="text-sm font-medium text-(--color-lapis) hover:underline"
-            >
+            <button onClick={addLanguage} className={btnDashed}>
+              <IconPlus />
               {tr('cv', 'addLanguage')}
             </button>
           </div>
         </section>
 
-        <button
-          onClick={handleDownload}
-          className="rounded-(--radius-md) bg-(--color-saffron) px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-(--color-saffron-light)"
-        >
-          {tr('cv', 'downloadPdf')}
-        </button>
+      </div>
+
+      {/* Sticky so the primary action stays reachable while scrolling a long form, especially on mobile */}
+      <div className="fixed inset-x-0 bottom-0 border-t border-(--color-line) bg-(--color-paper-raised)/95 px-6 py-3 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-3xl justify-end">
+          <button onClick={handleDownload} className={`${btnPrimary} px-6 py-3`}>
+            <IconDownload className="h-4 w-4" />
+            {tr('cv', 'downloadPdf')}
+          </button>
+        </div>
       </div>
     </div>
   );

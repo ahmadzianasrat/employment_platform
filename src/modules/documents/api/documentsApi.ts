@@ -1,6 +1,7 @@
 import { supabase } from '../../../lib/supabase/client';
 import type { DocumentEntry, DocumentFile } from '../types/document';
 import { MAX_FILE_SIZE_BYTES, ACCEPTED_FILE_TYPES } from '../data/documentTypes';
+import { compressImageIfWorthwhile } from '../../../lib/utils/compressImage';
 
 export function validateFile(file: File): string | null {
   if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
@@ -37,8 +38,12 @@ export async function createEntryWithFiles(
     const validationError = validateFile(file);
     if (validationError) return { error: validationError };
 
-    const path = `${userId}/${entry.id}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('documents').upload(path, file);
+    // Downscale/re-encode oversized photos before upload — keeps Storage
+    // usage down without touching the file the user picked on disk.
+    const uploadFile = await compressImageIfWorthwhile(file);
+
+    const path = `${userId}/${entry.id}/${Date.now()}_${uploadFile.name}`;
+    const { error: uploadError } = await supabase.storage.from('documents').upload(path, uploadFile);
 
     if (uploadError) {
       return { error: `Failed to upload ${file.name}: ${uploadError.message}` };
@@ -49,8 +54,8 @@ export async function createEntryWithFiles(
       user_id: userId,
       storage_path: path,
       original_filename: file.name,
-      mime_type: file.type,
-      size_bytes: file.size,
+      mime_type: uploadFile.type,
+      size_bytes: uploadFile.size,
     });
 
     if (fileRowError) {
@@ -71,8 +76,10 @@ export async function addFilesToEntry(
     const validationError = validateFile(file);
     if (validationError) return { error: validationError };
 
-    const path = `${userId}/${entryId}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('documents').upload(path, file);
+    const uploadFile = await compressImageIfWorthwhile(file);
+
+    const path = `${userId}/${entryId}/${Date.now()}_${uploadFile.name}`;
+    const { error: uploadError } = await supabase.storage.from('documents').upload(path, uploadFile);
     if (uploadError) return { error: `Failed to upload ${file.name}: ${uploadError.message}` };
 
     const { error: fileRowError } = await supabase.from('document_files').insert({
@@ -80,8 +87,8 @@ export async function addFilesToEntry(
       user_id: userId,
       storage_path: path,
       original_filename: file.name,
-      mime_type: file.type,
-      size_bytes: file.size,
+      mime_type: uploadFile.type,
+      size_bytes: uploadFile.size,
     });
     if (fileRowError) return { error: fileRowError.message };
   }

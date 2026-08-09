@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
+import { useAuth } from '../../../lib/auth/AuthContext';
 import { useRealtimeJobs } from '../hooks/useRealtimeJobs';
+import { useJobAlertMatches } from '../hooks/useJobAlertMatches';
+import { JobAlertToastStack } from '../components/JobAlertToast';
 import { LocationFilter } from '../components/LocationFilter';
 import { OrgAvatar } from '../components/OrgAvatar';
+import { SourceBadge } from '../components/SourceBadge';
+import { JobTableSkeleton } from '../components/JobTableSkeleton';
+import { ProfileCompletionWidget } from '../../profile/components/ProfileCompletionWidget';
 import { locationMatchesProvince } from '../data/provinces';
 import { TELEGRAM_PASHTO_URL, TELEGRAM_DARI_URL } from '../../../lib/config/channelLinks';
 import type { Language } from '../../../lib/i18n/strings';
@@ -35,7 +41,9 @@ function TelegramIcon({ className }: { className?: string }) {
 
 export function JobBoardPage() {
   const { tr, language, setLanguage } = useLanguage();
+  const { user } = useAuth();
   const { jobs, loading, isSampleData } = useRealtimeJobs();
+  const { matches, dismiss } = useJobAlertMatches(jobs);
   const [search, setSearch] = useState('');
   const [location, setLocation] = useState('all');
   const [profession, setProfession] = useState('all');
@@ -69,6 +77,7 @@ export function JobBoardPage() {
 
   return (
     <div>
+      <JobAlertToastStack jobs={matches} onDismiss={dismiss} />
       <section className="bg-(--color-lapis-dark) py-14">
         <div className="mx-auto max-w-6xl px-6">
           <h1 className="font-display text-3xl font-semibold text-white sm:text-4xl">
@@ -79,6 +88,8 @@ export function JobBoardPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-8">
+        <ProfileCompletionWidget />
+
         <div className="flex flex-col flex-wrap gap-3 sm:flex-row sm:items-center">
           <select
             value={language}
@@ -124,6 +135,15 @@ export function JobBoardPage() {
           </select>
 
           <LocationFilter value={location} onChange={setLocation} />
+
+          {user && (
+            <Link
+              to="/job-alerts"
+              className="ml-auto text-sm font-medium text-(--color-lapis) hover:underline"
+            >
+              Manage alerts
+            </Link>
+          )}
         </div>
 
         {isSampleData && !loading && (
@@ -134,7 +154,7 @@ export function JobBoardPage() {
 
         <div className="mt-6">
           {loading ? (
-            <p className="text-(--color-muted)">{tr('common', 'loading')}</p>
+            <JobTableSkeleton />
           ) : filtered.length === 0 ? (
             <p className="text-(--color-muted)">{tr('jobBoard', 'noResults')}</p>
           ) : (
@@ -198,9 +218,7 @@ export function JobBoardPage() {
                             {job.location ?? '—'}
                           </td>
                           <td className="px-3 py-3">
-                            <span className="whitespace-nowrap rounded-full bg-(--color-lapis)/10 px-2 py-0.5 text-xs font-medium text-(--color-lapis)">
-                              {job.source_label ?? job.source}
-                            </span>
+                            <SourceBadge source={job.source} label={job.source_label ?? job.source} />
                           </td>
                           <td className="px-3 py-3 text-center">
                             <a

@@ -70,8 +70,10 @@ applied. **Always check that README before assuming the live Supabase
 database matches this codebase** — migrations are applied manually via
 Supabase's SQL Editor, not automatically.
 
-Current tables: `jobs`, `saved_jobs`, `admin_users`, `document_entries`,
-`document_files`. Storage buckets: `documents` (private).
+Current tables: `jobs`, `saved_jobs`, `admin_users`, `document_entries`
+(now with `verified`/`verified_at`/`verified_by`), `document_files`,
+`cv_profiles`, `job_alerts`. Storage buckets: `documents` (private to the
+uploading user, plus read-only access for admins as of migration 007).
 
 ## Deployment
 See `DEPLOYMENT.md` for the full walkthrough. Short version:
@@ -140,21 +142,55 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
   listings), pagination (20/page), realtime updates (no refresh needed)
 - Job detail page
 - CV builder with PDF export (personal info, education, experience,
-  skills, languages with native-language highlighting, address)
+  skills, languages with native-language highlighting, address), two
+  visual templates (Classic single-column, Modern sidebar), autosaved to
+  Supabase per signed-in user (`cv_profiles` table) so it survives
+  refreshes and works across devices — signed-out visitors can still use
+  the builder, it just doesn't persist
 - Auth (email/password via Supabase Auth), saved/bookmarked jobs
 - Document vault: upload ID card, passport, driving license, TIN, school
   diploma (single-entry types) and university diplomas, work experience,
   employment contracts, references (repeatable — multiple entries
   allowed), bulk upload with per-file type assignment, PDF/JPG/PNG/WEBP,
-  15MB per file limit, private per-user storage
+  15MB per file limit, private per-user storage. Oversized photos
+  (JPEG/PNG/WEBP over 300KB) are downscaled and re-encoded client-side
+  before upload to cut Storage usage — PDFs are uploaded as-is (real PDF
+  compression needs a proper library, not a canvas trick — see
+  `src/lib/utils/compressImage.ts`). Users can view *and download* each
+  uploaded file from My Documents.
 - Admin panel: view/edit/hide/delete jobs, cross-source duplicate
-  detection (flags candidates, never auto-merges), pagination (20/page)
+  detection (flags candidates, never auto-merges), pagination (20/page).
+  Also includes **read-only document review** (`/admin/documents`):
+  admins can view/download any user's uploaded documents and mark entries
+  as "verified", but cannot edit, delete, or upload on a user's behalf —
+  see migration 007.
 - PHP scraper → Supabase sync (one-way push at discovery, AI fields
   populate at publish time)
+- Mobile-first responsive header with a hamburger menu — sign-in is
+  always reachable on small screens even when signed out
+- Job alerts: signed-in users can save province/profession criteria
+  (`/job-alerts`) and get an **in-app toast** when a matching job appears
+  while they have the site open. This is NOT email/Telegram delivery for
+  when they're away — that needs a server-side cron (Supabase Edge
+  Function) + an email provider, and hasn't been built. See migration
+  009's comment for the full reasoning.
+- Profile completeness nudge on the job board: shows signed-in users
+  whether their CV and document vault are filled in, with direct links to
+  finish, dismissible per session
+- Employer verification badge: ACBAR/ReliefWeb listings marked "verified
+  source" (established NGO/UN aggregators), manual admin-added listings
+  marked separately — see `src/modules/jobs/data/sourceTrust.ts` for the
+  reasoning and how to adjust it
+- CV builder route is lazy-loaded (`React.lazy`) so the jsPDF/html2canvas
+  bundle (the largest dependency in the app) only loads for people who
+  actually open the CV builder
+- Job board shows skeleton loading rows instead of a plain "Loading…" text
+  while the initial job fetch is in flight
 
 ## Not built yet
 - AI-powered CV tailoring / cover letter generation
 - Payments/credits system
 - Employer-facing accounts (direct job posting)
-- Admin ability to view/verify uploaded documents (deliberately not
-  built — documents are currently private to the uploading user only)
+- Real PDF compression on upload (images are compressed; PDFs are not)
+- Actual email/Telegram delivery for job alerts when the user isn't on
+  the site (current alerts are in-app only — see above)

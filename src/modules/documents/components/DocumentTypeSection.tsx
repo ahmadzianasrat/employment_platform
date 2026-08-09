@@ -3,6 +3,8 @@ import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { createEntryWithFiles, addFilesToEntry } from '../api/documentsApi';
 import { ACCEPTED_FILE_EXTENSIONS } from '../data/documentTypes';
 import { DocumentFilesList } from './DocumentFilesList';
+import { btnSecondarySm, btnDashed } from '../../../components/ui/buttonStyles';
+import { IconPlus } from '../../../components/ui/icons';
 import type { DocumentEntry } from '../types/document';
 import type { DocumentTypeConfig } from '../data/documentTypes';
 
@@ -67,7 +69,8 @@ export function DocumentTypeSection({ typeConfig, entries, userId, onChanged }: 
           <div key={entry.id} className={entries.length > 1 ? 'border-t border-(--color-line) pt-3' : ''}>
             {entry.label && <p className="mb-2 text-sm font-medium text-(--color-ink)">{entry.label}</p>}
             <DocumentFilesList files={entry.files} onFileRemoved={onChanged} />
-            <label className="mt-2 inline-block cursor-pointer text-xs font-medium text-(--color-lapis) hover:underline">
+            <label className={`${btnSecondarySm} mt-2 cursor-pointer`}>
+              <IconPlus />
               {tr('documents', 'addFiles')}
               <input
                 type="file"
@@ -107,10 +110,8 @@ export function DocumentTypeSection({ typeConfig, entries, userId, onChanged }: 
         {error && <p className="text-xs text-(--color-danger)">{error}</p>}
 
         {showAddButton && (
-          <button
-            onClick={() => setAddingNew(true)}
-            className="text-sm font-medium text-(--color-lapis) hover:underline"
-          >
+          <button onClick={() => setAddingNew(true)} className={btnDashed}>
+            <IconPlus />
             {tr('documents', 'addNew')}
           </button>
         )}

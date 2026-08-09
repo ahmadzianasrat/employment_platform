@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { DOCUMENT_TYPES, ACCEPTED_FILE_EXTENSIONS } from '../data/documentTypes';
 import { createEntryWithFiles, validateFile } from '../api/documentsApi';
+import { btnPrimary, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
+import { IconTrash } from '../../../components/ui/icons';
 
 interface PendingFile {
   file: File;
@@ -118,10 +120,8 @@ export function BulkUploadZone({ userId, onUploaded }: { userId: string; onUploa
                   </option>
                 ))}
               </select>
-              <button
-                onClick={() => removePending(i)}
-                className="text-xs font-medium text-(--color-danger) hover:underline"
-              >
+              <button onClick={() => removePending(i)} className={btnDangerOutlineSm}>
+                <IconTrash />
                 {tr('documents', 'remove')}
               </button>
             </div>
@@ -129,11 +129,7 @@ export function BulkUploadZone({ userId, onUploaded }: { userId: string; onUploa
 
           {error && <p className="text-sm text-(--color-danger)">{error}</p>}
 
-          <button
-            onClick={handleConfirm}
-            disabled={uploading}
-            className="rounded-(--radius-md) bg-(--color-saffron) px-5 py-2 text-sm font-semibold text-white hover:bg-(--color-saffron-light) disabled:opacity-60"
-          >
+          <button onClick={handleConfirm} disabled={uploading} className={btnPrimary}>
             {uploading ? tr('documents', 'uploading') : tr('documents', 'confirmUpload')}
           </button>
         </div>

@@ -138,6 +138,137 @@ Also discovered mid-session: a second, disconnected git history got created by r
 
 ---
 
+## Update — Downloads, admin document review, upload compression, CV/mobile design pass: 2026-08-08 9:07 PM
+
+### 1. Download button in My Documents
+Each file under a document type now has **View** / **Download** / **Remove**
+buttons (previously only View/Remove). Uses a new `downloadFile()` helper
+(`src/lib/utils/downloadFile.ts`) that fetches the signed URL as a blob and
+triggers a real save-to-disk — the plain `<a download>` attribute doesn't
+reliably force a download for cross-origin URLs like Supabase's signed
+URLs, most browsers just navigate to the file instead.
+
+### 2. Admin document review (was deliberately not built before — now is)
+- New `/admin/documents` page: admins can view/download any user's
+  uploaded documents, grouped by user, filterable by document type and
+  verified status, with a "Mark verified" toggle per entry.
+- **Read-only by design**: admins get SELECT on `document_entries`,
+  `document_files`, and the `documents` storage bucket — but no
+  INSERT/DELETE on files or storage objects. The only thing admins can
+  write is the new `verified` flag on `document_entries`. A compromised
+  or careless admin account can look, but can't tamper with or delete a
+  user's uploaded files.
+- New columns: `document_entries.verified` (bool), `verified_at`,
+  `verified_by`.
+- New `admin_list_document_owners()` Postgres function (security definer,
+  re-checks admin status itself) — lets the admin UI show which email
+  each document entry belongs to, since there's no `profiles` table and
+  admins otherwise have no way to read `auth.users` from the client.
+- Small `AdminNav` tab bar (Jobs / Documents) added to both admin pages.
+- SQL: `database/migrations/007_admin_document_review.sql`
+
+### 3. Upload compression
+Images (JPEG/PNG/WEBP) over 300KB are downscaled (max 2000px on the long
+side) and re-encoded as JPEG at 82% quality client-side, before upload —
+cuts Storage usage for the common case (phone camera photos of documents,
+routinely 4000px+ and several MB). Falls back to the original file if
+compression fails or wouldn't actually shrink it. See
+`src/lib/utils/compressImage.ts` for the full reasoning, including why
+PDFs are explicitly *not* compressed here (needs a real PDF library, not
+a canvas trick — flagged as a possible follow-up, not done in this pass).
+
+### 4. CV builder design pass
+Replaced every plain-text "Remove" / "+ Add" link with real styled
+buttons (danger-outline for remove, dashed for add, primary for the PDF
+download) using new shared `src/components/ui/buttonStyles.ts` +
+dependency-free `src/components/ui/icons.tsx` (small inline SVGs — no new
+icon library). Each form section is now a bordered card instead of
+floating text. The "Download PDF" button is now a sticky bottom bar so
+it's reachable without scrolling back up, especially on mobile. Same
+button/icon treatment applied to the document vault (Add more files, Add
+another, Remove, View, Download) for visual consistency across the app.
+
+### 5. Mobile-first fix: sign-in button was missing on mobile
+Header previously had no mobile nav at all — on narrow screens the
+desktop nav (including Sign in) just disappeared with nothing replacing
+it. Rebuilt `Header.tsx` with a proper hamburger menu: a working
+menu/drawer toggle, and the **Sign in** button now always visible
+top-right on mobile regardless of menu state (not buried behind a tap).
+Nav links, language switcher, and sign-out live in the drawer when open.
+
+### Docs
+- `README.md`: updated feature list (download button, admin document
+  review, upload compression, mobile header), updated table list, moved
+  "admin doc review" out of "Not built yet"
+- `database/migrations/README.md`: added migration 007, confirmed 004–006
+  as applied per your note that all SQL has been run
+- This entry in `CHANGES.md`
+
+---
+
+## Update — Job alerts, profile nudge, CV templates, verified-source badge, lazy-loading: 2026-08-08 9:59 PM
+
+### 1. Job alerts (in-app only — read this before assuming it emails anyone)
+- New `/job-alerts` page: signed-in users save province/profession
+  criteria. Matching runs client-side against the existing realtime job
+  subscription (`useJobAlertMatches`) — when a new job lands that matches
+  a saved alert, a toast notification appears while they're on the site.
+- **This does not send email or Telegram messages when the user is
+  away.** That needs a server-side piece (Supabase Edge Function on a
+  cron trigger + an email provider API key) that wasn't built — the
+  alerts page UI says this explicitly, and it's called out in migration
+  009's SQL comments so it isn't mistaken for full delivery later.
+- SQL: `database/migrations/009_job_alerts.sql`
+
+### 2. Profile completeness nudge
+- New widget on the job board (signed-in users only, dismissible per
+  session): shows whether the CV builder has meaningful data and how many
+  of the 9 document types have at least one file uploaded, with direct
+  links to finish each.
+- This needed the CV builder to actually persist somewhere to check
+  against — see next item.
+
+### 3. CV builder now persists (autosave)
+- New `cv_profiles` table — one row per user, autosaved 1.2s after the
+  last edit while signed in. Loads automatically on return visits, so the
+  form no longer resets on refresh/navigation. Signed-out visitors can
+  still use the builder for a one-off download; it just won't be saved,
+  and the page says so.
+- SQL: `database/migrations/008_cv_profiles.sql`
+
+### 4. CV templates
+- Added a second visual PDF template ("Modern" — lapis sidebar with
+  contact/skills/languages, main column for summary/experience/education)
+  alongside the existing "Classic" single-column layout. Template choice
+  is part of the autosaved profile.
+
+### 5. Employer verification badge
+- Jobs from ACBAR/ReliefWeb (established NGO/UN aggregators) now show a
+  green "verified source" badge on the job board; jobs.af/Wazifaha keep
+  the plain source badge; manually admin-added listings get their own
+  saffron badge. This is a product judgment call about which sources have
+  their own institutional vetting, not a fraud claim — easy to re-tier in
+  one place (`src/modules/jobs/data/sourceTrust.ts`) if it should change.
+
+### 6. Lazy-loading the CV builder
+- `CvBuilderPage` is now `React.lazy`-loaded behind a `Suspense` boundary
+  in `App.tsx`. It's the single biggest dependency in the app (jsPDF +
+  html2canvas). Build output now shows it as its own ~414KB chunk instead
+  of being baked into the main bundle — visitors who only browse jobs no
+  longer download it.
+
+### 7. Job board loading skeleton
+- Replaced the plain "Loading…" text with skeleton table rows
+  (`JobTableSkeleton.tsx`) while the initial job fetch is in flight —
+  gives the page its real structure immediately instead of a blank gap.
+
+### Docs
+- `README.md`: updated feature list and table list for all of the above
+- `database/migrations/README.md`: added migrations 008 and 009
+- This entry in `CHANGES.md`
+
+---
+
 ## Running it locally
 ```
 npm install
