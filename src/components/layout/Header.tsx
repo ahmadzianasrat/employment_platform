@@ -47,8 +47,8 @@ export function Header() {
         </NavLink>
 
         {/* Desktop nav */}
-        <div className="hidden items-center gap-6 sm:flex">
-          <nav className="flex items-center gap-6 border-x border-white/15 px-6">
+        <div className="hidden items-center gap-6 lg:flex">
+          <nav className="flex items-center gap-5 border-x border-white/15 px-5">
             <NavLink to="/" end className={linkClass}>
               {({ isActive }) => (
                 <>
@@ -66,6 +66,16 @@ export function Header() {
                     <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                   )}
                   {tr('nav', 'cvBuilder')}
+                </>
+              )}
+            </NavLink>
+            <NavLink to="/cover-letter" className={linkClass}>
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
+                  )}
+                  Cover Letter
                 </>
               )}
             </NavLink>
@@ -149,7 +159,7 @@ export function Header() {
         </div>
 
         {/* Mobile controls: sign-in stays visible, everything else lives behind the menu button */}
-        <div className="flex items-center gap-2 sm:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           {!user && (
             <NavLink
               to="/sign-in"
@@ -172,13 +182,16 @@ export function Header() {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="border-t border-white/15 px-4 pb-4 pt-2 sm:hidden">
+        <div className="border-t border-white/15 px-4 pb-4 pt-2 lg:hidden">
           <nav className="flex flex-col gap-1">
             <NavLink to="/" end className={mobileLinkClass} onClick={closeMobile}>
               {tr('nav', 'jobs')}
             </NavLink>
             <NavLink to="/cv-builder" className={mobileLinkClass} onClick={closeMobile}>
               {tr('nav', 'cvBuilder')}
+            </NavLink>
+            <NavLink to="/cover-letter" className={mobileLinkClass} onClick={closeMobile}>
+              Cover Letter
             </NavLink>
             <NavLink to="/blog" className={mobileLinkClass} onClick={closeMobile}>
               Blog

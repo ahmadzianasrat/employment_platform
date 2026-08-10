@@ -77,12 +77,13 @@ export function JobBoardPage() {
   return (
     <div>
       <JobAlertToastStack jobs={matches} onDismiss={dismiss} />
-      <section className="bg-(--color-lapis-dark) py-14">
+      <section className="border-b border-(--color-line) bg-(--color-paper-raised) py-14">
         <div className="mx-auto max-w-6xl px-6">
-          <h1 className="font-display text-3xl font-semibold text-white sm:text-4xl">
+          <div className="h-1 w-14 rounded-full bg-(--color-saffron)" />
+          <h1 className="mt-4 font-display text-3xl font-semibold text-(--color-ink) sm:text-4xl">
             {tr('jobBoard', 'title')}
           </h1>
-          <p className="mt-3 max-w-xl text-white/70">{tr('jobBoard', 'subtitle')}</p>
+          <p className="mt-3 max-w-xl text-(--color-muted)">{tr('jobBoard', 'subtitle')}</p>
         </div>
       </section>
 

@@ -16,6 +16,7 @@ environment (or catching up an existing one that's missing later ones).
 | `009_job_alerts.sql` | Creates `job_alerts` table (province/profession alert criteria) + RLS | ⏳ Not yet applied — run after 008 |
 | `010_admin_insert_jobs.sql` | Grants admins INSERT on `jobs` (for the new manual "Add Job" form) | ⏳ Not yet applied — run after 009 |
 | `011_blog.sql` | Creates `blog_posts` table + RLS (public reads published only, admins full CRUD) | ⏳ Not yet applied — run after 010 |
+| `012_cover_letter_profiles.sql` | Creates `cover_letter_profiles` table (one row per user, autosaved from the new Cover Letter Builder) + RLS | ⏳ Not yet applied — run after 011 |
 
 Each file is idempotent-unsafe by design (uses `create table`, not
 `create table if not exists`) — running a file twice on the same database

@@ -68,6 +68,14 @@ export function IconClose({ className = 'h-5 w-5' }: IconProps) {
   );
 }
 
+export function IconTelegram({ className = 'h-3.5 w-3.5' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M21.9 4.3 2.7 11.8c-1.2.5-1.2 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.9.9.9.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.2-.4-1.7-1.6-1.3ZM8.5 14.1l9.1-5.7c.4-.3.8-.1.5.2l-7.5 6.8-.3 3.2-1.4-4.5Z" />
+    </svg>
+  );
+}
+
 export function IconShieldCheck({ className = 'h-3.5 w-3.5' }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>

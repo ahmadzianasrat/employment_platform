@@ -3,6 +3,19 @@ import type { DocumentEntry, DocumentFile } from '../types/document';
 import { MAX_FILE_SIZE_BYTES, ACCEPTED_FILE_TYPES } from '../data/documentTypes';
 import { compressImageIfWorthwhile } from '../../../lib/utils/compressImage';
 
+// Dynamically imported (not a static top-level import) — pdf-lib is a
+// heavy dependency, and documentsApi.ts is reachable from the main
+// bundle via the profile-completeness widget on the job board (which is
+// NOT lazy-loaded). A static import here would drag pdf-lib into every
+// visitor's initial page load just for the upload-compression path.
+async function compressForUpload(file: File): Promise<File> {
+  if (file.type === 'application/pdf') {
+    const { compressPdfIfWorthwhile } = await import('../../../lib/utils/compressPdf');
+    return compressPdfIfWorthwhile(file);
+  }
+  return compressImageIfWorthwhile(file);
+}
+
 export function validateFile(file: File): string | null {
   if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
     return 'Only PDF, JPG, PNG, or WEBP files are accepted.';
@@ -40,7 +53,7 @@ export async function createEntryWithFiles(
 
     // Downscale/re-encode oversized photos before upload — keeps Storage
     // usage down without touching the file the user picked on disk.
-    const uploadFile = await compressImageIfWorthwhile(file);
+    const uploadFile = await compressForUpload(file);
 
     const path = `${userId}/${entry.id}/${Date.now()}_${uploadFile.name}`;
     const { error: uploadError } = await supabase.storage.from('documents').upload(path, uploadFile);
@@ -76,7 +89,7 @@ export async function addFilesToEntry(
     const validationError = validateFile(file);
     if (validationError) return { error: validationError };
 
-    const uploadFile = await compressImageIfWorthwhile(file);
+    const uploadFile = await compressForUpload(file);
 
     const path = `${userId}/${entryId}/${Date.now()}_${uploadFile.name}`;
     const { error: uploadError } = await supabase.storage.from('documents').upload(path, uploadFile);

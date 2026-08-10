@@ -361,6 +361,92 @@ accent border/active-state dots unchanged).
 
 ---
 
+## Update — Real branding, hero/navbar/footer fixes, cover letter builder, PDF compression: 2026-08-09 10:54 PM
+
+### 1–3. Real logo, app name, and favicon
+- Replaced the placeholder geometric `BrandMark` SVG with your actual
+  logo. Cropped the icon out of the uploaded `logo__2_.png` (isolating
+  just the circular handshake/mountain mark from the full lockup) and
+  made the background transparent via chroma-keying, so it sits cleanly
+  on the dark navbar. Source: `src/assets/hamqar-icon.png` (33KB,
+  resized from the original — see "Branding" section in `README.md` for
+  how to re-derive it if the logo changes).
+- `appName` string now reads "همکار" in all three languages (was
+  "Employment Platform" / translated equivalents). `<title>` updated to
+  "Hamqar — همکار".
+- Favicon replaced with your uploaded `favicon.png`, generated as a
+  proper set (16px, 32px, 180px apple-touch-icon, 512px) and wired into
+  `index.html`.
+
+### 4. Hero section background
+The "Find your next role" band was a flat dark-blue block
+(`--color-lapis-dark`) sitting directly under the header, which is now
+also dark (`--color-ink`) — two different dark blues stacked created an
+ugly seam. Replaced with a clean paper/cream background, dark text, and a
+small saffron accent bar above the heading.
+
+### 5. Blog delete confirmation
+`AdminBlogPage`'s delete button now confirms first — matches the same
+`confirm()` pattern already used for job deletion in `AdminJobsPage`.
+
+### 6. Cover Letter Builder (new)
+- New `/cover-letter` page: guided fields (your details, recipient,
+  opening/motivation/closing paragraphs, sign-off) rather than one blank
+  textarea — meant to help people who haven't written a formal cover
+  letter before structure one properly.
+- Two templates (Formal — traditional business-letter layout; Modern —
+  colored header band) with a live scaled preview, same pattern as the
+  CV builder.
+- Autosaves to Supabase per signed-in user (`cover_letter_profiles`
+  table, migration 012), mirroring `cv_profiles`.
+- "Fill in my contact details from my CV" button — pulls name/email/
+  phone/address from the CV profile if one exists, so users don't retype
+  the same info twice.
+- Lazy-loaded (`React.lazy` in `App.tsx`) for the same bundle-size reason
+  as the CV builder — jsPDF is shared between both via a common chunk
+  rather than duplicated.
+
+### 7. Navbar alignment
+Root cause: the desktop nav collapsed to mobile at the `sm` breakpoint
+(640px), but the nav had grown to 6+ links (Jobs, CV Builder, Cover
+Letter, Blog, Saved, Documents, Alerts, Admin) — nowhere near enough room
+at that width, causing crowding/wrapping. Switched the desktop/mobile
+toggle to the `lg` breakpoint (1024px) throughout `Header.tsx` and
+tightened nav item spacing slightly.
+
+### 8. Telegram links in the footer
+Added Pashto (`t.me/pashtoJobs`) and Dari (`t.me/dariJobs`) channel links
+to the footer with a Telegram icon, trilingual labels.
+
+### 9. PDF compression on upload
+New `compressPdf.ts`, using `pdf-lib`'s object-stream save option, wired
+into every document upload path (per-type slots, bulk upload, and the
+all-in-one PDF). Being upfront about its actual effect: this compresses
+the PDF's internal structure (redundant objects, cross-reference streams,
+metadata) — it does NOT re-encode embedded images at lower quality, so a
+scanned ID photo saved as a PDF won't shrink much beyond what its
+embedded JPEG already is. Real image-in-PDF recompression would need
+decoding and re-encoding each embedded image stream, which is a
+meaningfully bigger feature than "compress PDFs too" implied — flagged as
+a possible follow-up in `README.md`.
+
+Also fixed a bundle-size regression this introduced: `compressPdf.ts`
+(and therefore `pdf-lib`) was being pulled into the *main* bundle via
+`documentsApi.ts → profileCompletionApi.ts → ProfileCompletionWidget`,
+which sits on the job board and isn't lazy-loaded. Switched the PDF-
+compression import to a dynamic `import()` so `pdf-lib` only loads when
+someone's actually uploading a file, not on every page load.
+
+### Docs
+- `README.md`: renamed header from "Employment Platform" to "Hamqar
+  (همکار)", updated feature list (cover letter builder, PDF compression
+  caveat), new "Branding" section documenting the logo/favicon source
+  files, updated table list
+- `database/migrations/README.md`: added migration 012
+- This entry in `CHANGES.md`
+
+---
+
 ## Running it locally
 ```
 npm install

@@ -11,9 +11,9 @@ export const LANGUAGES: { code: Language; label: string; dir: 'ltr' | 'rtl' }[] 
 export const STRINGS = {
   brand: {
     appName: {
-      en: 'Employment Platform',
-      ps: 'د استخدام پلاتفورم',
-      da: 'پلتفورم استخدام',
+      en: 'همکار',
+      ps: 'همکار',
+      da: 'همکار',
     },
   },
   nav: {
@@ -252,6 +252,9 @@ export const STRINGS = {
     contact: { en: 'Contact', ps: 'اړیکه', da: 'تماس' },
     aboutHeading: { en: 'About this site', ps: 'د دې سایټ په اړه', da: 'درباره این سایت' },
     rightsReserved: { en: 'All rights reserved.', ps: 'ټول حقونه خوندي دي.', da: 'کلیه حقوق محفوظ است.' },
+    followUs: { en: 'Follow our Telegram channels', ps: 'زموږ ټلیګرام چینلونه فالو کړئ', da: 'کانال‌های تلگرام ما را دنبال کنید' },
+    pashtoTelegram: { en: 'Pashto Telegram', ps: 'پښتو ټلیګرام', da: 'تلگرام پشتو' },
+    dariTelegram: { en: 'Dari Telegram', ps: 'دري ټلیګرام', da: 'تلگرام دری' },
   },
 } as const;
 

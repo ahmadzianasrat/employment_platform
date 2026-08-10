@@ -111,6 +111,7 @@ export function AdminBlogPage() {
   }
 
   async function handleDelete(post: BlogPost) {
+    if (!confirm(`Delete "${post.title}" permanently? This cannot be undone.`)) return;
     await deletePost(post.id);
     setPosts((prev) => prev.filter((p) => p.id !== post.id));
   }

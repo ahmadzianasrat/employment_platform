@@ -22,6 +22,11 @@ const CvBuilderPage = lazy(() =>
   import('./modules/cv/pages/CvBuilderPage').then((m) => ({ default: m.CvBuilderPage }))
 );
 
+// Same reasoning as CvBuilderPage — pulls in jsPDF just for the download.
+const CoverLetterBuilderPage = lazy(() =>
+  import('./modules/coverLetter/pages/CoverLetterBuilderPage').then((m) => ({ default: m.CoverLetterBuilderPage }))
+);
+
 // Also lazy-loaded: pulls in pdf-lib (for the merge-and-download feature),
 // which alone added ~350KB gzipped to the main bundle when this page was
 // eagerly imported.
@@ -51,6 +56,14 @@ function App() {
                   element={
                     <Suspense fallback={<RouteFallback />}>
                       <CvBuilderPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/cover-letter"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <CoverLetterBuilderPage />
                     </Suspense>
                   }
                 />

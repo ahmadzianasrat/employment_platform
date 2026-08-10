@@ -1,9 +1,9 @@
-# Employment Platform
+# Hamqar (همکار)
 
 A trilingual (English/Pashto/Dari) job board for Afghan job seekers. Aggregates
 listings from ACBAR, ReliefWeb, jobs.af, and Wazifaha via a separate PHP
-scraper, plus a CV builder, document vault, saved jobs, and an admin review
-panel — all backed by Supabase.
+scraper, plus a CV builder, cover letter builder, document vault, saved jobs,
+a blog, and an admin review panel — all backed by Supabase.
 
 **If you're picking this project up in a fresh chat with no other context,
 read this file top to bottom first**, then `CHANGES.md` for the detailed
@@ -21,6 +21,15 @@ history, then `DEPLOYMENT.md` for the hosting setup.
   ACBAR/ReliefWeb/Wazifaha/jobs.af, posts to Telegram/Facebook, and pushes
   each newly-discovered vacancy to the Supabase `jobs` table
 - **Hosting**: GitHub Pages (frontend) + Hostinger (domain registration + email only)
+
+## Branding
+Logo/favicon source files: `public/logo-full.png` (full lockup with
+`hamqar.com` tagline) and the derived favicon set
+(`public/favicon-16.png`, `favicon-32.png`, `apple-touch-icon.png`,
+`favicon-512.png`). The small header icon used in `BrandMark.tsx` is a
+cropped, transparent-background version at `src/assets/hamqar-icon.png`
+— re-crop from `logo-full.png` if the logo ever changes, rather than
+editing the cropped file directly.
 
 ## Repo
 `https://github.com/ahmadzianasrat/employment_platform` — owned by the
@@ -72,9 +81,9 @@ Supabase's SQL Editor, not automatically.
 
 Current tables: `jobs`, `saved_jobs`, `admin_users`, `document_entries`
 (now with `verified`/`verified_at`/`verified_by`), `document_files`,
-`cv_profiles`, `job_alerts`, `blog_posts`. Storage buckets: `documents`
-(private to the uploading user, plus read-only access for admins as of
-migration 007).
+`cv_profiles`, `job_alerts`, `blog_posts`, `cover_letter_profiles`.
+Storage buckets: `documents` (private to the uploading user, plus
+read-only access for admins as of migration 007).
 
 ## Deployment
 See `DEPLOYMENT.md` for the full walkthrough. Short version:
@@ -157,9 +166,12 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
   allowed), bulk upload with per-file type assignment, PDF/JPG/PNG/WEBP,
   15MB per file limit, private per-user storage. Oversized photos
   (JPEG/PNG/WEBP over 300KB) are downscaled and re-encoded client-side
-  before upload to cut Storage usage — PDFs are uploaded as-is (real PDF
-  compression needs a proper library, not a canvas trick — see
-  `src/lib/utils/compressImage.ts`). Users can view *and download* each
+  before upload to cut Storage usage (`src/lib/utils/compressImage.ts`),
+  and PDFs are re-saved with object-stream compression via `pdf-lib`
+  (`src/lib/utils/compressPdf.ts`) — this shrinks text/metadata-heavy
+  PDFs noticeably but won't meaningfully shrink a scanned photo saved as
+  a PDF, since that needs re-encoding the embedded image itself, not just
+  the PDF structure. Users can view *and download* each
   uploaded file from My Documents. Also supports uploading a **single
   combined PDF** if the user already has everything scanned into one file
   (`AllInOneUpload.tsx`, separate from the per-type slots), and a
@@ -180,6 +192,11 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
   published state, optional cover image URL, social sharing (native Web
   Share API where available, plus explicit Facebook/X/WhatsApp/copy-link
   buttons) on each post. See migration 011.
+- Cover Letter Builder (`/cover-letter`): same pattern as the CV builder —
+  autosaved to Supabase (`cover_letter_profiles`, migration 012), two
+  templates (Formal / Modern) with a live preview, optional "fill in my
+  contact details from my CV" button. Lazy-loaded, same bundle-size
+  reasoning as the CV builder.
 - PHP scraper → Supabase sync (one-way push at discovery, AI fields
   populate at publish time)
 - Mobile-first responsive header with a hamburger menu — sign-in is
@@ -207,6 +224,8 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
 - AI-powered CV tailoring / cover letter generation
 - Payments/credits system
 - Employer-facing accounts (direct job posting)
-- Real PDF compression on upload (images are compressed; PDFs are not)
+- Real PDF compression that re-encodes embedded images at lower quality
+  (current PDF compression only optimizes the PDF's internal structure —
+  see the Documents section above)
 - Actual email/Telegram delivery for job alerts when the user isn't on
   the site (current alerts are in-app only — see above)
