@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../../lib/auth/AuthContext';
+import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { fetchJobAlerts, createJobAlert, deleteJobAlert } from '../api/jobAlertsApi';
 import type { JobAlert } from '../api/jobAlertsApi';
 import { AFGHAN_PROVINCES } from '../data/provinces';
@@ -10,6 +11,7 @@ import { LoadingBlock } from '../../../components/ui/Spinner';
 
 export function JobAlertsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { tr } = useLanguage();
   const [alerts, setAlerts] = useState<JobAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [province, setProvince] = useState('all');
@@ -34,7 +36,9 @@ export function JobAlertsPage() {
     if (!user) return;
     setError(null);
     setSaving(true);
-    const label = [province !== 'all' ? province : null, profession.trim() || null].filter(Boolean).join(' · ') || 'Any new job';
+    const label =
+      [province !== 'all' ? province : null, profession.trim() || null].filter(Boolean).join(' · ') ||
+      tr('jobAlerts', 'anyNewJob');
     const { error: createError } = await createJobAlert(user.id, {
       label,
       province,
@@ -60,24 +64,19 @@ export function JobAlertsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="font-display text-2xl font-semibold text-(--color-ink)">Job Alerts</h1>
-      <p className="mt-1 text-(--color-muted)">
-        Get notified in-app when a new job matching your criteria is posted while you're on the site.
-      </p>
-      <p className="mt-1 text-xs text-(--color-muted)">
-        Note: this notifies you while you have Hamqar open in a tab — it doesn't send email or Telegram
-        messages when you're away. That would need a server-side piece we haven't built yet.
-      </p>
+      <h1 className="font-display text-2xl font-semibold text-(--color-ink)">{tr('jobAlerts', 'title')}</h1>
+      <p className="mt-1 text-(--color-muted)">{tr('jobAlerts', 'subtitle')}</p>
+      <p className="mt-1 text-xs text-(--color-muted)">{tr('jobAlerts', 'notice')}</p>
 
       <div className="mt-6 rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-4">
-        <h2 className="text-sm font-semibold text-(--color-ink)">New alert</h2>
+        <h2 className="text-sm font-semibold text-(--color-ink)">{tr('jobAlerts', 'newAlert')}</h2>
         <div className="mt-3 flex flex-col gap-3 sm:flex-row">
           <select
             value={province}
             onChange={(e) => setProvince(e.target.value)}
             className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper) px-3 py-2 text-sm"
           >
-            <option value="all">Any province</option>
+            <option value="all">{tr('jobAlerts', 'anyProvince')}</option>
             {AFGHAN_PROVINCES.map((p) => (
               <option key={p} value={p}>
                 {p}
@@ -87,11 +86,11 @@ export function JobAlertsPage() {
           <input
             value={profession}
             onChange={(e) => setProfession(e.target.value)}
-            placeholder="Profession (optional, e.g. Nursing)"
+            placeholder={tr('jobAlerts', 'professionPlaceholder')}
             className="flex-1 rounded-(--radius-md) border border-(--color-line) bg-(--color-paper) px-3 py-2 text-sm"
           />
           <button onClick={handleCreate} disabled={saving} className={btnPrimary}>
-            {saving ? 'Adding…' : 'Add alert'}
+            {saving ? tr('jobAlerts', 'adding') : tr('jobAlerts', 'addAlert')}
           </button>
         </div>
         {error && <p className="mt-2 text-sm text-(--color-danger)">{error}</p>}
@@ -99,19 +98,19 @@ export function JobAlertsPage() {
 
       <div className="mt-6 space-y-2">
         {loading ? (
-          <LoadingBlock label="Loading…" />
+          <LoadingBlock label={tr('jobAlerts', 'loading')} />
         ) : alerts.length === 0 ? (
-          <p className="text-sm text-(--color-muted)">No alerts yet — add one above.</p>
+          <p className="text-sm text-(--color-muted)">{tr('jobAlerts', 'noAlertsYet')}</p>
         ) : (
           alerts.map((alert) => (
             <div
               key={alert.id}
               className="flex items-center justify-between rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) px-3 py-2.5"
             >
-              <span className="text-sm text-(--color-ink)">{alert.label ?? 'Any new job'}</span>
+              <span className="text-sm text-(--color-ink)">{alert.label ?? tr('jobAlerts', 'anyNewJob')}</span>
               <button onClick={() => handleDelete(alert.id)} className={btnDangerOutlineSm}>
                 <IconTrash />
-                Remove
+                {tr('jobAlerts', 'remove')}
               </button>
             </div>
           ))
@@ -120,3 +119,4 @@ export function JobAlertsPage() {
     </div>
   );
 }
+

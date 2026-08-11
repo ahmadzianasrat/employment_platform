@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { fetchPublishedPosts } from '../api/blogApi';
 import type { BlogPost } from '../api/blogApi';
 import { LoadingBlock } from '../../../components/ui/Spinner';
@@ -10,6 +11,7 @@ function formatDate(iso: string | null): string {
 }
 
 export function BlogListPage() {
+  const { tr } = useLanguage();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,13 +24,13 @@ export function BlogListPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="font-display text-2xl font-semibold text-(--color-ink)">Blog</h1>
-      <p className="mt-1 text-(--color-muted)">Tips, updates, and stories for Afghan job seekers.</p>
+      <h1 className="font-display text-2xl font-semibold text-(--color-ink)">{tr('blog', 'title')}</h1>
+      <p className="mt-1 text-(--color-muted)">{tr('blog', 'subtitle')}</p>
 
       {loading ? (
-        <LoadingBlock label="Loading posts…" />
+        <LoadingBlock label={tr('blog', 'loadingPosts')} />
       ) : posts.length === 0 ? (
-        <p className="mt-8 text-sm text-(--color-muted)">No posts yet — check back soon.</p>
+        <p className="mt-8 text-sm text-(--color-muted)">{tr('blog', 'noPostsYet')}</p>
       ) : (
         <div className="mt-8 space-y-5">
           {posts.map((post) => (

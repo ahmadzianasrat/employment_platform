@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../lib/auth/AuthContext';
+import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { getProfileCompletion } from '../api/profileCompletionApi';
 import type { ProfileCompletion } from '../api/profileCompletionApi';
 import { IconCheck } from '../../../components/ui/icons';
 
 export function ProfileCompletionWidget() {
   const { user } = useAuth();
+  const { tr } = useLanguage();
   const [completion, setCompletion] = useState<ProfileCompletion | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
@@ -25,10 +27,8 @@ export function ProfileCompletionWidget() {
   return (
     <div className="mb-6 rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
       <div className="flex-1">
-        <h3 className="text-sm font-semibold text-(--color-ink)">Finish setting up your profile</h3>
-        <p className="mt-0.5 text-xs text-(--color-muted)">
-          A complete CV and document set means you can apply the moment you find a job.
-        </p>
+        <h3 className="text-sm font-semibold text-(--color-ink)">{tr('profile', 'title')}</h3>
+        <p className="mt-0.5 text-xs text-(--color-muted)">{tr('profile', 'subtitle')}</p>
 
         <div className="mt-3 flex flex-wrap gap-4">
           <Link to="/cv-builder" className="flex items-center gap-2 text-sm hover:underline">
@@ -40,7 +40,7 @@ export function ProfileCompletionWidget() {
               {completion.cvComplete && <IconCheck className="h-3 w-3" />}
             </span>
             <span className={completion.cvComplete ? 'text-(--color-muted) line-through' : 'text-(--color-ink)'}>
-              CV builder
+              {tr('profile', 'cvBuilder')}
             </span>
           </Link>
 
@@ -53,7 +53,7 @@ export function ProfileCompletionWidget() {
               {docsComplete && <IconCheck className="h-3 w-3" />}
             </span>
             <span className={docsComplete ? 'text-(--color-muted) line-through' : 'text-(--color-ink)'}>
-              Documents — {completion.documentTypesUploaded}/{completion.documentTypesTotal} ({docPercent}%)
+              {tr('profile', 'documentsLabel')} — {completion.documentTypesUploaded}/{completion.documentTypesTotal} ({docPercent}%)
             </span>
           </Link>
         </div>
@@ -63,7 +63,7 @@ export function ProfileCompletionWidget() {
         onClick={() => setDismissed(true)}
         className="mt-3 shrink-0 text-xs font-medium text-(--color-muted) hover:text-(--color-ink) sm:mt-0"
       >
-        Dismiss
+        {tr('profile', 'dismiss')}
       </button>
     </div>
   );

@@ -447,6 +447,139 @@ someone's actually uploading a file, not on every page load.
 
 ---
 
+## Update — Telegram link fix, logo revert, full translation pass, external job links, job board redesign: 2026-08-10
+
+### 1. Telegram links fixed for real this time
+Root cause: `src/lib/config/channelLinks.ts` still had the original
+placeholder URLs (`t.me/your_pashto_channel` / `t.me/your_dari_channel`)
+— I'd fixed the footer's own copy of these URLs in an earlier pass but
+missed that the job board pulled from a different, still-unfixed source.
+Fixed the actual config file this time, and refactored the footer to
+import from it instead of hardcoding its own copy, so the two can't drift
+apart again.
+
+### 2. Logo/favicon reverted to your actual artwork
+Went back to using your uploaded `favicon.png` directly as the header
+logo (it has its own white rounded-card background, so it reads cleanly
+against the dark navbar — the previous cropped/transparent version didn't
+have that contrast anchor). Removed the separate "همکار" text label next
+to it in the header since the logo image already contains the wordmark.
+
+### 3. Full translation pass
+Added `jobAlerts`, `profile`, `blog`, and `coverLetter` sections to
+`strings.ts` and wired them through every public-facing screen that was
+still hardcoded English: Header nav labels, Job Alerts page, job-alert
+toast, profile-completeness widget, Blog list/detail pages, the entire
+Cover Letter Builder, and the job board's pagination/profession-filter/
+sample-data-notice copy. Left the CV/cover-letter **PDF section headers**
+("SUMMARY", "EXPERIENCE", etc.) in English deliberately — that's actual
+document content following a widely-recognized CV format convention, not
+app chrome, and localizing it would make the live preview mismatch the
+generated PDF. Admin screens remain English-only per the existing
+convention (noted at the top of `strings.ts`).
+
+### 4. "View details" now goes to the original source
+New `src/modules/jobs/lib/jobLink.ts`: scraped listings (anything except
+`source === 'manual'`) now link straight to `job.source_url` in a new
+tab — that's the actual source of truth for deadlines and application
+instructions, not our re-parsed copy. Manually-added listings still open
+our own detail page, since there's no external source to send them to.
+Applied consistently across the job board, job cards (Saved Jobs), and
+job-alert toast notifications.
+
+### 5–6. Job board redesign
+- Replaced the dense, horizontally-scrolling table with a responsive
+  card grid (reusing an enhanced `JobCard`, now shared with Saved Jobs
+  for visual consistency site-wide) — 1 column on mobile, up to 3 on
+  desktop. Cards show a "New" badge for recent postings, verified-source
+  badge, profession/gender chips, and the deadline in red.
+- Removed the two Telegram icon buttons that were repeated on *every
+  single row* — consolidated into one promotional banner in the
+  redesigned hero instead.
+- Hero section: added a soft two-tone radial gradient background, a live
+  listings-count stat chip, an "Updated daily" chip, and the
+  consolidated Telegram channel CTA.
+
+### 7. Stopped naming specific source organizations in generic copy
+The hero subtitle and the "About this site" blurb both named ACBAR/
+ReliefWeb/jobs.af/Wazifaha explicitly — reworded to "trusted job boards
+across Afghanistan" / "trusted public sources" in all three languages.
+Per-listing source attribution (the badge on each individual job) is
+unaffected — that's factual per-job data, not generic site copy.
+
+### Docs
+- This entry in `CHANGES.md`
+- No new migrations this round — everything above is application code.
+
+---
+
+## Update — Launch prep: SEO, sitemap, Open Graph, analytics, legal pages: 2026-08-11
+
+Following up on "part 3" of the go-live checklist from the previous
+session (parts 1–2, real job data + admin access, were confirmed done
+separately).
+
+### robots.txt + sitemap.xml
+- `public/robots.txt` — allows all crawlers, points to the sitemap.
+- `scripts/generate-sitemap.mjs`, wired in as an npm `prebuild` step (runs
+  automatically before every `npm run build`, including in the GitHub
+  Actions deploy). Static pages (home, CV builder, cover letter, blog
+  index) are always included. Blog posts and manually-added job listings
+  are fetched live from Supabase's REST API at build time and included
+  too — those are pages we actually host, unlike most job listings, which
+  link straight to their original source (see `jobLink.ts` from the
+  previous session) and so aren't the canonical page for that content.
+  Falls back to static-pages-only with a console warning (never fails the
+  build) if Supabase credentials aren't in the build environment — e.g. a
+  local dev build with no `.env`.
+  **Caveat**: this script was written and syntax-tested in a sandbox with
+  no network access to Supabase, so the live-fetch path has not actually
+  run yet — check `hamqar.com/sitemap.xml` after the next deploy to
+  confirm blog/job entries show up correctly, per the go-live checklist
+  in `DEPLOYMENT.md`.
+
+### Open Graph / social preview
+- `index.html`: meta description, canonical tag, full Open Graph tag set,
+  and a Twitter/X card — so pasting a hamqar.com link into Telegram,
+  Facebook, or WhatsApp shows a real preview instead of a blank card.
+- New `public/og-image.png` (1200×630), generated from your logo — dark
+  navy background, soft lapis/saffron gradient accents, the logo, and a
+  trilingual tagline.
+
+### Per-route canonical URLs
+Because this is a client-side-routed SPA, every page serves the same
+`index.html` — the static canonical tag in it is only ever correct for
+`/`. Left as-is, every other page (a blog post, a job detail page) would
+tell search engines "the real version of this is the homepage," which
+actively prevents those pages from being indexed on their own. New
+`src/lib/seo/head.ts` updates the canonical tag on every route change.
+
+### Optional Google Analytics
+New `src/lib/analytics/ga.ts` — fully inert (no script injected, no
+requests made) unless `VITE_GA_MEASUREMENT_ID` is set. I can't create a
+GA account on your behalf; `DEPLOYMENT.md` has the exact steps to wire
+one up (~5 minutes) once you have a Measurement ID. Fires a `page_view`
+on every client-side route change, since GA's own automatic tracking only
+sees the very first load in an SPA.
+
+### Privacy Policy + Terms of Use
+New `/privacy` and `/terms` pages, linked from the footer. These are
+**starting drafts, not legal advice** — worth a real review given the
+site collects ID cards, passports, and other identity documents. Kept
+**English-only deliberately**, unlike the rest of the app's UI copy:
+legal text carries real liability risk if a casual (non-professional)
+translation ends up meaning something subtly different in Pashto or Dari.
+That's a scope line I drew on purpose, not an oversight — flagged in both
+files' top comments and in `README.md`'s "Not built yet."
+
+### DEPLOYMENT.md
+Added a "Go-live checklist" section covering all of the above plus the
+things I can't verify myself from here (real job data in the `jobs`
+table, migrations applied, an `admin_users` row for you, and what to
+check right after the next deploy).
+
+---
+
 ## Running it locally
 ```
 npm install

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '../../../lib/i18n/LanguageContext';
 
 function FacebookIcon() {
   return (
@@ -44,6 +45,7 @@ const iconBtn =
   'inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--color-line) text-(--color-ink) transition-colors hover:border-(--color-lapis) hover:text-(--color-lapis)';
 
 export function ShareButtons({ url, title }: { url: string; title: string }) {
+  const { tr } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   async function handleNativeShare() {
@@ -105,7 +107,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
       <button onClick={handleCopy} className={iconBtn} title="Copy link" aria-label="Copy link">
         <LinkIcon />
       </button>
-      {copied && <span className="text-xs text-(--color-success)">Link copied</span>}
+      {copied && <span className="text-xs text-(--color-success)">{tr('blog', 'linkCopied')}</span>}
     </div>
   );
 }

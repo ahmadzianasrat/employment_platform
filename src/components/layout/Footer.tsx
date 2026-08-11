@@ -1,10 +1,9 @@
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../lib/i18n/LanguageContext';
 import { IconTelegram } from '../ui/icons';
-
+import { TELEGRAM_PASHTO_URL, TELEGRAM_DARI_URL } from '../../lib/config/channelLinks';
 // Support address for hamqar.com
 const CONTACT_EMAIL = 'support@hamqar.com';
-const PASHTO_TELEGRAM = 'https://t.me/pashtoJobs';
-const DARI_TELEGRAM = 'https://t.me/dariJobs';
 
 export function Footer() {
   const { tr } = useLanguage();
@@ -32,10 +31,19 @@ export function Footer() {
           </p>
         </div>
 
+        <div className="mt-4 flex gap-4 border-t border-(--color-line) pt-4 text-xs text-(--color-muted)">
+          <Link to="/privacy" className="hover:text-(--color-lapis) hover:underline">
+            Privacy Policy
+          </Link>
+          <Link to="/terms" className="hover:text-(--color-lapis) hover:underline">
+            Terms of Use
+          </Link>
+        </div>
+
         <div className="mt-4 flex flex-col gap-2 border-t border-(--color-line) pt-4 text-sm text-(--color-muted) sm:flex-row sm:items-center sm:gap-4">
           <span>{tr('footer', 'followUs')}:</span>
           <a
-            href={PASHTO_TELEGRAM}
+            href={TELEGRAM_PASHTO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-(--color-lapis) hover:underline"
@@ -44,7 +52,7 @@ export function Footer() {
             {tr('footer', 'pashtoTelegram')}
           </a>
           <a
-            href={DARI_TELEGRAM}
+            href={TELEGRAM_DARI_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-(--color-lapis) hover:underline"

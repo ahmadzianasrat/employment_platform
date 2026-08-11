@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { fetchPostBySlug } from '../api/blogApi';
 import type { BlogPost } from '../api/blogApi';
 import { BlogContent } from '../components/BlogContent';
@@ -13,6 +14,7 @@ function formatDate(iso: string | null): string {
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { tr } = useLanguage();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -31,7 +33,7 @@ export function BlogPostPage() {
     });
   }, [slug]);
 
-  if (loading) return <LoadingBlock label="Loading…" className="mx-auto max-w-2xl px-6" />;
+  if (loading) return <LoadingBlock label={tr('blog', 'loadingPosts')} className="mx-auto max-w-2xl px-6" />;
   if (notFound || !post) return <Navigate to="/blog" replace />;
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://hamqar.com/blog/${post.slug}`;
@@ -39,7 +41,7 @@ export function BlogPostPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
       <Link to="/blog" className="text-sm font-medium text-(--color-lapis) hover:underline">
-        ← Blog
+        {tr('blog', 'backToBlog')}
       </Link>
 
       {post.cover_image_url && (

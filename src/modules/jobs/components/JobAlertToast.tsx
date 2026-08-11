@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../../lib/i18n/LanguageContext';
+import { isExternalJob } from '../lib/jobLink';
 import type { Job } from '../types/job';
 
 export function JobAlertToastStack({ jobs, onDismiss }: { jobs: Job[]; onDismiss: (jobId: string) => void }) {
+  const { tr } = useLanguage();
   if (jobs.length === 0) return null;
 
   return (
@@ -14,7 +17,7 @@ export function JobAlertToastStack({ jobs, onDismiss }: { jobs: Job[]; onDismiss
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-(--color-saffron)">
-                Matches your alert
+                {tr('jobAlerts', 'matchesYourAlert')}
               </p>
               <p className="mt-1 text-sm font-medium text-(--color-ink)">{job.title}</p>
               {job.employer && <p className="text-xs text-(--color-muted)">{job.employer}</p>}
@@ -27,13 +30,25 @@ export function JobAlertToastStack({ jobs, onDismiss }: { jobs: Job[]; onDismiss
               ✕
             </button>
           </div>
-          <Link
-            to={`/jobs/${job.id}`}
-            onClick={() => onDismiss(job.id)}
-            className="mt-2 inline-block text-xs font-semibold text-(--color-lapis) hover:underline"
-          >
-            View job →
-          </Link>
+          {isExternalJob(job) ? (
+            <a
+              href={job.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => onDismiss(job.id)}
+              className="mt-2 inline-block text-xs font-semibold text-(--color-lapis) hover:underline"
+            >
+              {tr('jobAlerts', 'viewJob')} →
+            </a>
+          ) : (
+            <Link
+              to={`/jobs/${job.id}`}
+              onClick={() => onDismiss(job.id)}
+              className="mt-2 inline-block text-xs font-semibold text-(--color-lapis) hover:underline"
+            >
+              {tr('jobAlerts', 'viewJob')} →
+            </Link>
+          )}
         </div>
       ))}
     </div>

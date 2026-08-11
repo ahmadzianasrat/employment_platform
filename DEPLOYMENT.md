@@ -111,3 +111,50 @@ automatically. No manual upload step, unlike the Hostinger flow.
 npm run build
 npm run preview
 ```
+
+## Part 3 — Optional: Google Analytics
+
+Analytics is disabled by default — nothing is tracked until you configure
+it. To enable:
+
+1. Create a free GA4 property at https://analytics.google.com and grab
+   its Measurement ID (looks like `G-XXXXXXXXXX`).
+2. Add it as a repo secret: **Settings → Secrets and variables → Actions
+   → New repository secret** → `VITE_GA_MEASUREMENT_ID` → paste the ID.
+   (`.github/workflows/deploy.yml` already passes this through to the
+   build if the secret exists — no further changes needed.)
+3. For local dev, add the same value to your `.env` file.
+
+See `src/lib/analytics/ga.ts` for how this works — it's a no-op with no
+network requests at all if the measurement ID isn't set.
+
+## Go-live checklist
+
+Before pointing real traffic (Telegram posts, social shares, etc.) at
+the site:
+
+- [ ] **Confirm the `jobs` table has real data.** `useRealtimeJobs.ts`
+      silently falls back to sample/placeholder listings if the table is
+      empty — check this is showing real scraped jobs, not fake ones.
+- [ ] **Run all pending SQL migrations** — check
+      `database/migrations/README.md` for what's applied vs. not.
+- [ ] **Confirm at least one row exists in `admin_users`** with your own
+      user ID, so you can actually access `/admin`. See the comment at
+      the bottom of `database/migrations/003_admin_permissions.sql` for
+      the exact insert statement.
+- [ ] **Push this update and let it deploy once**, then check:
+  - `https://hamqar.com/sitemap.xml` — should list your real blog posts
+    and manually-added jobs, not just the 4 static pages (if it only
+    shows 4, the Supabase secrets aren't reaching the sitemap script —
+    see Part 2, step 2)
+  - `https://hamqar.com/robots.txt` — should load and reference the
+    sitemap
+  - Paste `https://hamqar.com` into https://www.opengraph.xyz, or share
+    the link in a private Telegram chat to yourself, to confirm the
+    logo/description preview card looks right
+- [ ] **Read `/privacy` and `/terms`** — these are starting drafts (see
+      the note at the top of each), not reviewed by a lawyer. Worth a
+      look before wide promotion given the site handles ID
+      cards/passports.
+- [ ] (Optional) Set up `VITE_GA_MEASUREMENT_ID` per Part 3 above if you
+      want visit data from day one.

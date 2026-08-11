@@ -40,10 +40,7 @@ export function Header() {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-3.5 sm:px-6">
         <NavLink to="/" className="flex items-center gap-2.5" onClick={closeMobile}>
-          <BrandMark className="h-7 w-7 shrink-0" />
-          <span className="font-display text-[19px] font-semibold tracking-tight text-white">
-            {tr('brand', 'appName')}
-          </span>
+          <BrandMark className="h-10 w-10 shrink-0 rounded-(--radius-md)" />
         </NavLink>
 
         {/* Desktop nav */}
@@ -75,7 +72,7 @@ export function Header() {
                   {isActive && (
                     <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                   )}
-                  Cover Letter
+                  {tr('nav', 'coverLetter')}
                 </>
               )}
             </NavLink>
@@ -85,7 +82,7 @@ export function Header() {
                   {isActive && (
                     <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                   )}
-                  Blog
+                  {tr('nav', 'blog')}
                 </>
               )}
             </NavLink>
@@ -120,7 +117,7 @@ export function Header() {
                     {isActive && (
                       <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                     )}
-                    Alerts
+                    {tr('nav', 'alerts')}
                   </>
                 )}
               </NavLink>
@@ -132,7 +129,7 @@ export function Header() {
                     {isActive && (
                       <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
                     )}
-                    Admin
+                    {tr('nav', 'admin')}
                   </>
                 )}
               </NavLink>
@@ -191,10 +188,10 @@ export function Header() {
               {tr('nav', 'cvBuilder')}
             </NavLink>
             <NavLink to="/cover-letter" className={mobileLinkClass} onClick={closeMobile}>
-              Cover Letter
+              {tr('nav', 'coverLetter')}
             </NavLink>
             <NavLink to="/blog" className={mobileLinkClass} onClick={closeMobile}>
-              Blog
+              {tr('nav', 'blog')}
             </NavLink>
             {user && (
               <NavLink to="/saved" className={mobileLinkClass} onClick={closeMobile}>
@@ -208,12 +205,12 @@ export function Header() {
             )}
             {user && (
               <NavLink to="/job-alerts" className={mobileLinkClass} onClick={closeMobile}>
-                Alerts
+                {tr('nav', 'alerts')}
               </NavLink>
             )}
             {isAdmin && (
               <NavLink to="/admin" className={mobileLinkClass} onClick={closeMobile}>
-                Admin
+                {tr('nav', 'admin')}
               </NavLink>
             )}
           </nav>

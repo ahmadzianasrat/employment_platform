@@ -1,7 +1,9 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './lib/i18n/LanguageContext';
 import { AuthProvider } from './lib/auth/AuthContext';
+import { initAnalytics, trackPageView } from './lib/analytics/ga';
+import { setCanonicalPath } from './lib/seo/head';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { JobBoardPage } from './modules/jobs/pages/JobBoardPage';
@@ -14,6 +16,8 @@ import { AdminDocumentsPage } from './modules/admin/pages/AdminDocumentsPage';
 import { AdminBlogPage } from './modules/admin/pages/AdminBlogPage';
 import { BlogListPage } from './modules/blog/pages/BlogListPage';
 import { BlogPostPage } from './modules/blog/pages/BlogPostPage';
+import { PrivacyPolicyPage } from './modules/legal/pages/PrivacyPolicyPage';
+import { TermsPage } from './modules/legal/pages/TermsPage';
 
 // Lazy-loaded: pulls in jsPDF + html2canvas (~250KB gzipped), the single
 // biggest chunk in the app, so visitors who only want the job board never
@@ -40,11 +44,32 @@ function RouteFallback() {
   );
 }
 
+// Fires a GA page_view and updates the canonical URL on every client-side
+// route change — neither happens automatically since React Router never
+// triggers a real page navigation. Both no-op harmlessly if analytics
+// isn't configured (see src/lib/analytics/ga.ts); the canonical update
+// always runs regardless, since that's not tied to analytics being on.
+function AnalyticsListener() {
+  const location = useLocation();
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search, document.title);
+    setCanonicalPath(location.pathname);
+  }, [location]);
+
+  return null;
+}
+
 function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
         <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <AnalyticsListener />
           <div className="flex min-h-screen flex-col bg-(--color-paper)">
             <Header />
             <main className="flex-1">
@@ -75,6 +100,8 @@ function App() {
                 <Route path="/admin/blog" element={<AdminBlogPage />} />
                 <Route path="/blog" element={<BlogListPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
                 <Route path="/documents" element={
                   <Suspense fallback={<RouteFallback />}>
                     <DocumentsPage />

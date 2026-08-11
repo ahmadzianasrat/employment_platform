@@ -24,12 +24,16 @@ history, then `DEPLOYMENT.md` for the hosting setup.
 
 ## Branding
 Logo/favicon source files: `public/logo-full.png` (full lockup with
-`hamqar.com` tagline) and the derived favicon set
-(`public/favicon-16.png`, `favicon-32.png`, `apple-touch-icon.png`,
-`favicon-512.png`). The small header icon used in `BrandMark.tsx` is a
-cropped, transparent-background version at `src/assets/hamqar-icon.png`
-— re-crop from `logo-full.png` if the logo ever changes, rather than
-editing the cropped file directly.
+`hamqar.com` tagline, currently unused in the app but kept for reference/
+future use — e.g. a larger "About" page placement) and the derived
+favicon set (`public/favicon-16.png`, `favicon-32.png`,
+`apple-touch-icon.png`, `favicon-512.png`), all generated from the same
+source app-icon artwork. The header logo (`BrandMark.tsx`, via
+`src/assets/hamqar-icon.png`) uses that same app-icon artwork directly —
+it already has its own white rounded-card background, so it reads
+cleanly against the dark navbar without needing a transparent cutout. If
+the logo changes, regenerate both the favicon set and
+`src/assets/hamqar-icon.png` from the new source image.
 
 ## Repo
 `https://github.com/ahmadzianasrat/employment_platform` — owned by the
@@ -219,6 +223,19 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
   actually open the CV builder
 - Job board shows skeleton loading rows instead of a plain "Loading…" text
   while the initial job fetch is in flight
+- SEO/launch prep: `robots.txt`, a build-time-generated `sitemap.xml`
+  (static pages always included; blog posts and manually-added jobs
+  fetched live from Supabase during the build — see
+  `scripts/generate-sitemap.mjs`), Open Graph/Twitter card meta tags with
+  a real preview image (`public/og-image.png`) so shared links look right
+  on Telegram/Facebook/WhatsApp, a per-route canonical URL (SPAs default
+  to one static canonical for every page otherwise — see
+  `src/lib/seo/head.ts`), optional Google Analytics (off by default, see
+  `src/lib/analytics/ga.ts` and `DEPLOYMENT.md`), and starting-draft
+  `/privacy` and `/terms` pages
+- Full trilingual coverage: every public-facing screen added since the
+  original build now goes through `strings.ts` — admin screens remain
+  English-only by the existing convention
 
 ## Not built yet
 - AI-powered CV tailoring / cover letter generation
@@ -229,3 +246,10 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
   see the Documents section above)
 - Actual email/Telegram delivery for job alerts when the user isn't on
   the site (current alerts are in-app only — see above)
+- Self-service account deletion (privacy policy references contacting
+  support for this instead)
+- Professional Pashto/Dari translation of `/privacy` and `/terms` (kept
+  English-only deliberately — see the comment at the top of
+  `PrivacyPolicyPage.tsx`)
+- A reviewed-by-an-actual-lawyer privacy policy and terms of use (current
+  ones are a reasonable starting draft, not legal advice)
