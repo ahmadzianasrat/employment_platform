@@ -143,10 +143,22 @@ the site:
       the bottom of `database/migrations/003_admin_permissions.sql` for
       the exact insert statement.
 - [ ] **Push this update and let it deploy once**, then check:
-  - `https://hamqar.com/sitemap.xml` — should list your real blog posts
-    and manually-added jobs, not just the 4 static pages (if it only
-    shows 4, the Supabase secrets aren't reaching the sitemap script —
-    see Part 2, step 2)
+  - `https://hamqar.com/sitemap.xml` — will only list your 4 static pages
+    until you have at least one **published** blog post or one
+    **manually-added** job (`source = 'manual'`, via the admin "Add Job"
+    form) — scraped jobs are deliberately excluded (see the comment at
+    the top of `scripts/generate-sitemap.mjs`). If you have posts/manual
+    jobs and they're still not showing, open the Actions tab → the
+    latest run → the "npm run build" step, and look for lines starting
+    with `[sitemap]`:
+    - `SKIPPED — ... not set` → the Supabase secrets aren't reaching the
+      build (double-check the repo secret names match exactly:
+      `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`)
+    - `FETCH FAILED (...)` → credentials are there but the request
+      itself failed — the error detail printed alongside it says why
+      (bad key, RLS blocking the anon role, etc.)
+    - `fetched OK, N row(s)` → the fetch worked; if N is 0, that's just
+      genuinely no matching content yet, not a bug
   - `https://hamqar.com/robots.txt` — should load and reference the
     sitemap
   - Paste `https://hamqar.com` into https://www.opengraph.xyz, or share

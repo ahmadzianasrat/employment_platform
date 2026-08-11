@@ -7,15 +7,22 @@
 // and included too, since those are pages we actually host — unlike most
 // job listings, which link straight to their original source (see
 // src/modules/jobs/lib/jobLink.ts) and so aren't the canonical page for
-// that content.
+// that content. Scraped jobs are deliberately NOT included individually —
+// they're not our canonical page for that content, and they're already
+// covered via the homepage listing them.
 //
-// Falls back to static-pages-only (with a console warning, not a build
-// failure) if Supabase credentials aren't available — e.g. a local dev
-// build without a .env file. This script was written and syntax-checked
-// in an environment with no network access to Supabase, so the first
-// real deploy is the first time the live-fetch path actually runs —
-// worth checking the Actions log and the resulting sitemap.xml after
-// that first deploy to confirm the blog/job entries look right.
+// Logging is intentionally verbose and specific — three very different
+// situations can all otherwise look identical ("only 4 static URLs in
+// the sitemap"), and that ambiguity is exactly what caused confusion the
+// first time this ran:
+//   1. Supabase credentials missing from the build environment
+//   2. Credentials present, but the request itself failed (bad key, RLS,
+//      wrong table/column name, etc.)
+//   3. Credentials present, request succeeded, table just has 0 matching
+//      rows (e.g. no blog posts published yet, no jobs manually added
+//      yet) — this is NOT a bug, just genuinely no content yet
+// Check the GitHub Actions build log for the `[sitemap]` lines after a
+// deploy — they now say explicitly which of the three happened.
 
 import { writeFileSync } from 'node:fs';
 
@@ -41,53 +48,82 @@ function urlEntry(loc, lastmod, priority, changefreq) {
     .join('\n');
 }
 
+/**
+ * Returns { ok: true, rows: [...] } on success (rows may be an empty
+ * array — that's a valid, meaningful result, not a failure), or
+ * { ok: false, reason, detail } describing exactly why not.
+ */
 async function fetchSupabaseTable(table, params) {
   const url = process.env.VITE_SUPABASE_URL;
   const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
+  if (!url || !key) {
+    return {
+      ok: false,
+      reason: 'no-credentials',
+      detail: 'VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY not set in this build environment',
+    };
+  }
 
   const endpoint = `${url}/rest/v1/${table}?${params}`;
-  const res = await fetch(endpoint, {
-    headers: { apikey: key, Authorization: `Bearer ${key}` },
-  });
-  if (!res.ok) {
-    console.warn(`[sitemap] Failed to fetch ${table}: ${res.status} ${res.statusText}`);
-    return null;
+  let res;
+  try {
+    res = await fetch(endpoint, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+  } catch (err) {
+    return { ok: false, reason: 'network-error', detail: String(err) };
   }
-  return res.json();
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    return {
+      ok: false,
+      reason: 'request-failed',
+      detail: `HTTP ${res.status} ${res.statusText} — ${body.slice(0, 300)}`,
+    };
+  }
+
+  const rows = await res.json();
+  return { ok: true, rows };
+}
+
+function logResult(table, result) {
+  if (result.ok) {
+    console.log(`[sitemap] ${table}: fetched OK, ${result.rows.length} row(s).`);
+  } else if (result.reason === 'no-credentials') {
+    console.warn(`[sitemap] ${table}: SKIPPED — ${result.detail}`);
+  } else {
+    console.error(`[sitemap] ${table}: FETCH FAILED (${result.reason}) — ${result.detail}`);
+  }
 }
 
 async function main() {
   const entries = STATIC_PAGES.map((p) => urlEntry(`${SITE_URL}${p.path}`, null, p.priority, p.changefreq));
 
-  const posts = await fetchSupabaseTable(
+  const postsResult = await fetchSupabaseTable(
     'blog_posts',
     'select=slug,updated_at&published=eq.true&order=published_at.desc&limit=500'
   );
-  if (posts) {
-    for (const post of posts) {
+  logResult('blog_posts', postsResult);
+  if (postsResult.ok) {
+    for (const post of postsResult.rows) {
       entries.push(urlEntry(`${SITE_URL}/blog/${post.slug}`, post.updated_at?.slice(0, 10), '0.6', 'weekly'));
     }
-  } else {
-    console.warn('[sitemap] Skipping blog posts — no Supabase credentials in this build environment.');
   }
 
-  const manualJobs = await fetchSupabaseTable(
+  const jobsResult = await fetchSupabaseTable(
     'jobs',
     'select=id,updated_at&source=eq.manual&status=eq.active&order=created_at.desc&limit=500'
   );
-  if (manualJobs) {
-    for (const job of manualJobs) {
+  logResult('jobs (manual, active)', jobsResult);
+  if (jobsResult.ok) {
+    for (const job of jobsResult.rows) {
       entries.push(urlEntry(`${SITE_URL}/jobs/${job.id}`, job.updated_at?.slice(0, 10), '0.5', 'weekly'));
     }
-  } else {
-    console.warn('[sitemap] Skipping manual job listings — no Supabase credentials in this build environment.');
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries.join('\n')}\n</urlset>\n`;
 
   writeFileSync('public/sitemap.xml', xml, 'utf-8');
-  console.log(`[sitemap] Wrote public/sitemap.xml with ${entries.length} URLs.`);
+  console.log(`[sitemap] Wrote public/sitemap.xml with ${entries.length} URL(s) total.`);
 }
 
 main().catch((err) => {

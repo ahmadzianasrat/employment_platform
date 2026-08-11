@@ -580,6 +580,45 @@ check right after the next deploy).
 
 ---
 
+## Update — Sitemap diagnostics: 2026-08-11 10:40 AM
+
+You reported `sitemap.xml` only showing the 4 static pages after
+deploying the launch-prep changes, with the rest of the go-live checklist
+confirmed done (real job data present, migrations applied, admin access
+working).
+
+The old script couldn't distinguish three very different situations that
+all looked identical from the outside ("only 4 URLs"): missing
+credentials, a failed request, or credentials + request both fine but the
+tables genuinely having 0 matching rows. That last one is actually the
+most likely explanation here — the sitemap only includes **published**
+blog posts and **manually-added** (`source = 'manual'`) jobs, not
+scraped ones (scraped jobs link externally per `jobLink.ts` from an
+earlier session, so they're not our canonical page for that content, and
+they're already covered via the homepage). If no blog post has been
+published yet and no job has been added through the admin "Add Job" form
+yet, 4 static URLs is the *correct* output, not a bug.
+
+Rewrote `scripts/generate-sitemap.mjs` to log unambiguously which of the
+three happened, per table, in the GitHub Actions build log:
+- `SKIPPED — ... not set` — credentials genuinely missing
+- `FETCH FAILED (reason) — detail` — credentials present, request itself
+  failed, with the actual error message
+- `fetched OK, N row(s)` — worked correctly; N=0 is a valid result, not
+  an error
+
+Tested both the no-credentials and unreachable-host paths locally to
+confirm neither crashes the build (a bad Supabase URL should never take
+down the whole deploy over the sitemap). Still haven't been able to test
+the success path against your actual project — I have no network access
+to Supabase from this sandbox — so the next deploy's Actions log is the
+first real signal either way.
+
+`DEPLOYMENT.md`'s go-live checklist updated with these three log
+signatures so this is diagnosable in one look going forward.
+
+---
+
 ## Running it locally
 ```
 npm install
