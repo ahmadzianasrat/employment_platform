@@ -129,7 +129,7 @@ export function AdminBlogPage() {
         {!showForm && (
           <button onClick={startCreate} className={btnPrimary}>
             <IconPlus />
-            New posts
+            New post
           </button>
         )}
       </div>
