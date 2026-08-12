@@ -133,40 +133,37 @@ network requests at all if the measurement ID isn't set.
 Before pointing real traffic (Telegram posts, social shares, etc.) at
 the site:
 
-- [ ] **Confirm the `jobs` table has real data.** `useRealtimeJobs.ts`
+- [x] **Confirm the `jobs` table has real data.** `useRealtimeJobs.ts`
       silently falls back to sample/placeholder listings if the table is
-      empty — check this is showing real scraped jobs, not fake ones.
-- [ ] **Run all pending SQL migrations** — check
+      empty — confirmed showing real scraped jobs.
+- [x] **Run all pending SQL migrations (through 012)** — check
       `database/migrations/README.md` for what's applied vs. not.
-- [ ] **Confirm at least one row exists in `admin_users`** with your own
+      **Note**: migrations 013 and 014 were added *after* this was
+      confirmed (expired-job hiding + manual job source relabel) — those
+      still need running, they're new since this checkbox was ticked.
+- [x] **Confirm at least one row exists in `admin_users`** with your own
       user ID, so you can actually access `/admin`. See the comment at
       the bottom of `database/migrations/003_admin_permissions.sql` for
       the exact insert statement.
-- [ ] **Push this update and let it deploy once**, then check:
-  - `https://hamqar.com/sitemap.xml` — will only list your 4 static pages
-    until you have at least one **published** blog post or one
-    **manually-added** job (`source = 'manual'`, via the admin "Add Job"
-    form) — scraped jobs are deliberately excluded (see the comment at
-    the top of `scripts/generate-sitemap.mjs`). If you have posts/manual
-    jobs and they're still not showing, open the Actions tab → the
-    latest run → the "npm run build" step, and look for lines starting
-    with `[sitemap]`:
-    - `SKIPPED — ... not set` → the Supabase secrets aren't reaching the
-      build (double-check the repo secret names match exactly:
-      `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`)
-    - `FETCH FAILED (...)` → credentials are there but the request
-      itself failed — the error detail printed alongside it says why
-      (bad key, RLS blocking the anon role, etc.)
-    - `fetched OK, N row(s)` → the fetch worked; if N is 0, that's just
-      genuinely no matching content yet, not a bug
+- [x] **Push this update and let it deploy once**, then check:
+  - `https://hamqar.com/sitemap.xml` — confirmed working (`[sitemap]`
+    logs showed `fetched OK, 0 row(s)` for both tables — that's correct
+    behavior, not a bug, until you publish a blog post or add a manual
+    job; see the note at the top of `scripts/generate-sitemap.mjs`)
   - `https://hamqar.com/robots.txt` — should load and reference the
     sitemap
-  - Paste `https://hamqar.com` into https://www.opengraph.xyz, or share
-    the link in a private Telegram chat to yourself, to confirm the
-    logo/description preview card looks right
+  - Open Graph preview card — **re-check this one after the next
+    deploy**, since the preview image itself changed in this update (see
+    the note in this session's `CHANGES.md` entry about the new image).
+    Paste `https://hamqar.com` into https://www.opengraph.xyz, or share
+    the link in a private Telegram chat to yourself.
 - [ ] **Read `/privacy` and `/terms`** — these are starting drafts (see
       the note at the top of each), not reviewed by a lawyer. Worth a
       look before wide promotion given the site handles ID
-      cards/passports.
-- [ ] (Optional) Set up `VITE_GA_MEASUREMENT_ID` per Part 3 above if you
-      want visit data from day one.
+      cards/passports. Leaving this unchecked since it hasn't come up in
+      conversation yet — check it off once you've actually read them.
+- [x] **`VITE_GA_MEASUREMENT_ID` configured** — page views are already
+      showing in GA, so this is live. Feature-usage events (CV/cover
+      letter downloads, document uploads, job alerts, saves, sign-ups)
+      were added this session — give GA a day to start showing them
+      under Reports → Engagement → Events.

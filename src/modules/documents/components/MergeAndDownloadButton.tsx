@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { mergeAndDownloadDocuments } from '../lib/mergeDocuments';
+import { trackEvent } from '../../../lib/analytics/ga';
 import { btnPrimary } from '../../../components/ui/buttonStyles';
 import { IconDownload } from '../../../components/ui/icons';
 import type { DocumentEntry } from '../types/document';
@@ -28,6 +29,7 @@ export function MergeAndDownloadButton({ entries }: { entries: DocumentEntry[] }
       const { skipped } = await mergeAndDownloadDocuments(mergeableEntries, (progress) => {
         setProgressLabel(`${progress.current}/${progress.total} — ${progress.currentFileName}`);
       });
+      trackEvent({ name: 'documents_merged_downloaded', file_count: fileCount });
       if (skipped.length > 0) {
         setSkippedMsg(`${tr('documents', 'mergeSkippedSome')}${skipped.join(', ')}`);
       }

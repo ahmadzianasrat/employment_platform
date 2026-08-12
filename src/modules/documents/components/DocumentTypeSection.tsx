@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { createEntryWithFiles, addFilesToEntry } from '../api/documentsApi';
+import { trackEvent } from '../../../lib/analytics/ga';
 import { ACCEPTED_FILE_EXTENSIONS } from '../data/documentTypes';
 import { DocumentFilesList } from './DocumentFilesList';
 import { btnSecondarySm, btnDashed } from '../../../components/ui/buttonStyles';
@@ -40,6 +41,7 @@ export function DocumentTypeSection({ typeConfig, entries, userId, onChanged }: 
     }
     setNewLabel('');
     setAddingNew(false);
+    trackEvent({ name: 'document_uploaded', document_type: typeConfig.key });
     onChanged();
   }
 
@@ -53,6 +55,7 @@ export function DocumentTypeSection({ typeConfig, entries, userId, onChanged }: 
       setError(error);
       return;
     }
+    trackEvent({ name: 'document_uploaded', document_type: typeConfig.key });
     onChanged();
   }
 

@@ -619,6 +619,81 @@ signatures so this is diagnosable in one look going forward.
 
 ---
 
+## Update — Feature-usage analytics, expired jobs hidden, manual job branding, logo size, OG image: 2026-08-11 8:36 PM
+
+Confirmed from the previous session: the sitemap situation was expected
+behavior, not a bug — `[sitemap]` logs showed `fetched OK, 0 row(s)` for
+both blog posts and manual jobs, meaning the fetch works correctly and
+there's simply no published content of either kind yet.
+
+### 1. Feature-usage analytics (beyond page views)
+Plain GA page-view tracking can't answer "is anyone actually using the CV
+builder" — someone can visit `/cv-builder` and never download anything.
+Added `trackEvent()` to `src/lib/analytics/ga.ts` with a typed event
+taxonomy, wired into the actual completion of each feature (not just
+navigating to its page):
+- `cv_pdf_downloaded` (with template)
+- `cover_letter_pdf_downloaded` (with template)
+- `document_uploaded` (with document type) — fires from the per-type
+  section, bulk upload, and covers all upload paths
+- `all_in_one_document_uploaded`
+- `documents_merged_downloaded` (with file count)
+- `job_alert_created`
+- `job_saved`
+- `sign_up_completed` / `sign_in_completed`
+
+Same "inert until configured" behavior as page-view tracking — no-ops
+silently if `VITE_GA_MEASUREMENT_ID` isn't set. Once GA has a day or two
+of data, these show up under Reports → Engagement → Events.
+
+### 2. Manual jobs now branded as "Hamqar.com"
+Admin "Add Job" listings previously defaulted `source_label` to
+`'Manual'`, which read as an internal/administrative label rather than a
+proper source. Changed the default to `'Hamqar.com'` so manually-added
+listings get the same kind of source badge treatment as scraped ones.
+Migration 014 backfills any rows already created with the old default.
+
+### 3. Expired jobs hidden from public listings
+Nothing previously transitioned a job to `'expired'` status once its
+`expires_on` date passed — it just silently stayed `'active'` and kept
+showing publicly forever until an admin manually hid it. Migration 013:
+- **Primary fix**: the public RLS policy on `jobs` now excludes anything
+  past its `expires_on` date regardless of status. This is the actual
+  fix and doesn't depend on anything else succeeding — applies uniformly
+  to the job board, the sitemap generator, anywhere querying with the
+  anon key.
+- **Secondary, best-effort**: a daily `pg_cron` job flips status to
+  `'expired'` for admin-panel accuracy, wrapped in exception handling —
+  skipped harmlessly if `pg_cron` isn't available on your plan or needs
+  dashboard-enabling first. The primary fix above doesn't depend on this
+  succeeding.
+
+### 4. Logo enlarged
+Header logo `h-10 w-10` → `h-14 w-14`.
+
+### 5. Open Graph image replaced
+Swapped in your uploaded image at `public/og-image.png` (1200×630,
+already the right dimensions). **Two things flagged, not silently
+shipped**:
+- The image has a visible watermark (repeated "hamqar.com" text and an
+  oversized translucent logo) that looks like unfinished output from a
+  non-final AI image tool — worth a final/clean version before wide use.
+- It displays UN, WHO, UNHCR, NRC, DRC, MSF, IOM, and Save the Children
+  logos prominently. Several of these (the UN emblem especially) have
+  legally protected usage restrictions, and displaying them like this on
+  your primary public-facing share image could read as implying an
+  affiliation or endorsement, and risks a takedown request. Used as
+  instructed, but flagging clearly rather than staying quiet about it.
+
+### DEPLOYMENT.md
+Go-live checklist updated — most items checked off per your confirmation,
+with two new action items called out explicitly rather than blindly
+checked: migrations 013/014 need running (they didn't exist when the
+rest of the checklist was confirmed), and the Open Graph preview is worth
+re-checking after the next deploy since the image itself just changed.
+
+---
+
 ## Running it locally
 ```
 npm install

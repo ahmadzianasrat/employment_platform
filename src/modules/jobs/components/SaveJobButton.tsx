@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { saveJob, unsaveJob, fetchSavedJobIds } from '../api/savedJobsApi';
+import { trackEvent } from '../../../lib/analytics/ga';
 
 // Sample/demo job ids are plain numbers ('1', '2'...) rather than real
 // Supabase UUIDs, so saving is disabled for them — nothing to persist to.
@@ -35,7 +36,10 @@ export function SaveJobButton({ jobId, className = '' }: { jobId: string; classN
 
     setBusy(true);
     const ok = saved ? await unsaveJob(user.id, jobId) : await saveJob(user.id, jobId);
-    if (ok) setSaved(!saved);
+    if (ok) {
+      setSaved(!saved);
+      if (!saved) trackEvent({ name: 'job_saved' });
+    }
     setBusy(false);
   }
 

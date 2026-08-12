@@ -236,6 +236,17 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
 - Full trilingual coverage: every public-facing screen added since the
   original build now goes through `strings.ts` — admin screens remain
   English-only by the existing convention
+- Feature-usage analytics: beyond page views, GA4 events fire on CV/cover
+  letter PDF downloads (with template), document uploads (per-type, bulk,
+  and all-in-one), document merges, job alert creation, job saves, and
+  sign-up/sign-in — see `src/lib/analytics/ga.ts` for the full event
+  taxonomy. Same "off unless configured" behavior as page-view tracking.
+- Manually-added jobs (admin "Add Job" form) show `Hamqar.com` as their
+  source badge, matching the visual treatment of scraped sources
+- Expired jobs (past their `expires_on` date) are excluded from public
+  listings at the RLS level — this didn't happen automatically before;
+  see migration 013
+- Header logo enlarged; Open Graph preview image updated
 
 ## Not built yet
 - AI-powered CV tailoring / cover letter generation

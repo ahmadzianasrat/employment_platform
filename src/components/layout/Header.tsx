@@ -40,7 +40,7 @@ export function Header() {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-3.5 sm:px-6">
         <NavLink to="/" className="flex items-center gap-2.5" onClick={closeMobile}>
-          <BrandMark className="h-10 w-10 shrink-0 rounded-(--radius-md)" />
+          <BrandMark className="h-14 w-14 shrink-0 rounded-(--radius-md)" />
         </NavLink>
 
         {/* Desktop nav */}

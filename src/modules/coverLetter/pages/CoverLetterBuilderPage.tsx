@@ -5,6 +5,7 @@ import { loadCoverLetterProfile, saveCoverLetterProfile } from '../api/coverLett
 import type { CoverLetterTemplate } from '../api/coverLetterProfileApi';
 import { loadCvProfile } from '../../cv/api/cvProfileApi';
 import { generateCoverLetterPdf } from '../lib/generateCoverLetterPdf';
+import { trackEvent } from '../../../lib/analytics/ga';
 import { CoverLetterPreview } from '../components/CoverLetterPreview';
 import { EMPTY_COVER_LETTER } from '../types/coverLetter';
 import type { CoverLetterData } from '../types/coverLetter';
@@ -79,6 +80,7 @@ export function CoverLetterBuilderPage() {
 
   function handleDownload() {
     generateCoverLetterPdf(letter, template);
+    trackEvent({ name: 'cover_letter_pdf_downloaded', template });
   }
 
   return (

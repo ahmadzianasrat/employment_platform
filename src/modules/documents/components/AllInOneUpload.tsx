@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { createEntryWithFiles, deleteEntry } from '../api/documentsApi';
+import { trackEvent } from '../../../lib/analytics/ga';
 import { DocumentFilesList } from './DocumentFilesList';
 import { btnPrimary, btnDashed } from '../../../components/ui/buttonStyles';
 import { IconPlus } from '../../../components/ui/icons';
@@ -42,6 +43,7 @@ export function AllInOneUpload({
       setError(uploadError);
       return;
     }
+    trackEvent({ name: 'all_in_one_document_uploaded' });
     onChanged();
   }
 

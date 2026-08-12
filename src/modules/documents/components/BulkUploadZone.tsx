@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { DOCUMENT_TYPES, ACCEPTED_FILE_EXTENSIONS } from '../data/documentTypes';
 import { createEntryWithFiles, validateFile } from '../api/documentsApi';
+import { trackEvent } from '../../../lib/analytics/ga';
 import { btnPrimary, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
 import { IconTrash } from '../../../components/ui/icons';
 
@@ -58,6 +59,7 @@ export function BulkUploadZone({ userId, onUploaded }: { userId: string; onUploa
         setUploading(false);
         return;
       }
+      trackEvent({ name: 'document_uploaded', document_type: p.documentType });
     }
     setUploading(false);
     setPending([]);

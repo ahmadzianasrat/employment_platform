@@ -8,6 +8,7 @@ import { AFGHAN_PROVINCES } from '../data/provinces';
 import { btnPrimary, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
 import { IconTrash } from '../../../components/ui/icons';
 import { LoadingBlock } from '../../../components/ui/Spinner';
+import { trackEvent } from '../../../lib/analytics/ga';
 
 export function JobAlertsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -51,6 +52,7 @@ export function JobAlertsPage() {
     }
     setProvince('all');
     setProfession('');
+    trackEvent({ name: 'job_alert_created' });
     load();
   }
 

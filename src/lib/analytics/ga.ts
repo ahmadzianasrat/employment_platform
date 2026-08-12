@@ -50,3 +50,32 @@ export function trackPageView(path: string, title?: string): void {
     page_location: window.location.href,
   });
 }
+
+/**
+ * Feature-usage events — this is what actually answers "which parts of
+ * the site are people using," which plain page-view analytics can't:
+ * someone can visit /cv-builder without ever downloading a CV, or visit
+ * /documents without uploading anything. These fire on the *completion*
+ * of an action, not just navigating to the page that offers it.
+ *
+ * In GA4: Reports → Engagement → Events shows counts per event name.
+ * For a breakdown by parameter (e.g. which CV template is more popular),
+ * register the parameter as a custom dimension under Admin → Custom
+ * definitions, or build an Exploration.
+ */
+export type AnalyticsEvent =
+  | { name: 'cv_pdf_downloaded'; template: string }
+  | { name: 'cover_letter_pdf_downloaded'; template: string }
+  | { name: 'document_uploaded'; document_type: string }
+  | { name: 'all_in_one_document_uploaded' }
+  | { name: 'documents_merged_downloaded'; file_count: number }
+  | { name: 'job_alert_created' }
+  | { name: 'job_saved' }
+  | { name: 'sign_up_completed' }
+  | { name: 'sign_in_completed' };
+
+export function trackEvent(event: AnalyticsEvent): void {
+  if (!MEASUREMENT_ID || !window.gtag) return;
+  const { name, ...params } = event;
+  window.gtag('event', name, params);
+}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { useAuth } from '../../../lib/auth/AuthContext';
+import { trackEvent } from '../../../lib/analytics/ga';
 
 const inputClass =
   'w-full rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) px-3 py-2.5 text-sm outline-none focus:border-(--color-lapis)';
@@ -32,6 +33,7 @@ export function AuthPage() {
         setError(error);
         return;
       }
+      trackEvent({ name: 'sign_in_completed' });
       navigate('/');
     } else {
       const { error } = await signUp(email, password);
@@ -40,6 +42,7 @@ export function AuthPage() {
         setError(error);
         return;
       }
+      trackEvent({ name: 'sign_up_completed' });
       setInfo(tr('auth', 'checkEmail'));
       setMode('signin');
     }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { generateCvPdf } from '../lib/generatePdf';
+import { trackEvent } from '../../../lib/analytics/ga';
 import { loadCvProfile, saveCvProfile } from '../api/cvProfileApi';
 import type { CvTemplate } from '../api/cvProfileApi';
 import { btnPrimary, btnDashed, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
@@ -133,6 +134,7 @@ export function CvBuilderPage() {
 
   function handleDownload() {
     generateCvPdf(cv, template);
+    trackEvent({ name: 'cv_pdf_downloaded', template });
   }
 
   return (

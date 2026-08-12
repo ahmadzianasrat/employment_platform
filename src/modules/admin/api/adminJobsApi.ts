@@ -48,7 +48,7 @@ export async function createManualJob(job: NewManualJob): Promise<{ error: strin
     source_url: job.source_url?.trim() || '',
     is_manual: true,
     status: 'active',
-    source_label: 'Manual',
+    source_label: 'Hamqar.com',
     title: job.title,
     employer: job.employer,
     location: job.location,
