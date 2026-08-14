@@ -6,6 +6,7 @@ import { useIsAdmin } from '../../modules/admin/hooks/useIsAdmin';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { BrandMark } from './BrandMark';
 import { IconMenu, IconClose } from '../ui/icons';
+import { btnPrimary } from '../ui/buttonStyles';
 
 export function Header() {
   const { tr } = useLanguage();
@@ -34,6 +35,16 @@ export function Header() {
     setMobileOpen(false);
   }
 
+  const navItems: { to: string; end?: boolean; key: string; requireAuth?: boolean }[] = [
+    { to: '/', end: true, key: 'home' },
+    { to: '/cv-builder', key: 'cvBuilder' },
+    { to: '/cover-letter', key: 'coverLetter' },
+    { to: '/pricing', key: 'pricing' },
+    { to: '/guide', key: 'guide' },
+    { to: '/blog', key: 'blog' },
+    { to: '/documents', key: 'documents', requireAuth: true },
+  ];
+
   return (
     <header
       className="relative border-b-2 border-(--color-saffron) bg-(--color-ink) shadow-[0_1px_0_rgba(0,0,0,0.15)]"
@@ -46,82 +57,20 @@ export function Header() {
         {/* Desktop nav */}
         <div className="hidden items-center gap-6 lg:flex">
           <nav className="flex items-center gap-5 border-x border-white/15 px-5">
-            <NavLink to="/" end className={linkClass}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
+            {navItems
+              .filter((item) => !item.requireAuth || user)
+              .map((item) => (
+                <NavLink key={item.key} to={item.to} end={item.end} className={linkClass}>
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
+                      )}
+                      {tr('nav', item.key)}
+                    </>
                   )}
-                  {tr('nav', 'jobs')}
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/cv-builder" className={linkClass}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
-                  )}
-                  {tr('nav', 'cvBuilder')}
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/cover-letter" className={linkClass}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
-                  )}
-                  {tr('nav', 'coverLetter')}
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/blog" className={linkClass}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
-                  )}
-                  {tr('nav', 'blog')}
-                </>
-              )}
-            </NavLink>
-            {user && (
-              <NavLink to="/saved" className={linkClass}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
-                    )}
-                    {tr('nav', 'savedJobs')}
-                  </>
-                )}
-              </NavLink>
-            )}
-            {user && (
-              <NavLink to="/documents" className={linkClass}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
-                    )}
-                    {tr('nav', 'documents')}
-                  </>
-                )}
-              </NavLink>
-            )}
-            {user && (
-              <NavLink to="/job-alerts" className={linkClass}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="absolute -top-[7px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-(--color-saffron)" />
-                    )}
-                    {tr('nav', 'alerts')}
-                  </>
-                )}
-              </NavLink>
-            )}
+                </NavLink>
+              ))}
             {isAdmin && (
               <NavLink to="/admin" className={linkClass}>
                 {({ isActive }) => (
@@ -137,6 +86,10 @@ export function Header() {
           </nav>
 
           <LanguageSwitcher />
+
+          <NavLink to="/order" className={btnPrimary}>
+            {tr('nav', 'getStarted')}
+          </NavLink>
 
           {user ? (
             <button
@@ -181,33 +134,16 @@ export function Header() {
       {mobileOpen && (
         <div className="border-t border-white/15 px-4 pb-4 pt-2 lg:hidden">
           <nav className="flex flex-col gap-1">
-            <NavLink to="/" end className={mobileLinkClass} onClick={closeMobile}>
-              {tr('nav', 'jobs')}
+            {navItems
+              .filter((item) => !item.requireAuth || user)
+              .map((item) => (
+                <NavLink key={item.key} to={item.to} end={item.end} className={mobileLinkClass} onClick={closeMobile}>
+                  {tr('nav', item.key)}
+                </NavLink>
+              ))}
+            <NavLink to="/order" className={mobileLinkClass} onClick={closeMobile}>
+              {tr('nav', 'getStarted')}
             </NavLink>
-            <NavLink to="/cv-builder" className={mobileLinkClass} onClick={closeMobile}>
-              {tr('nav', 'cvBuilder')}
-            </NavLink>
-            <NavLink to="/cover-letter" className={mobileLinkClass} onClick={closeMobile}>
-              {tr('nav', 'coverLetter')}
-            </NavLink>
-            <NavLink to="/blog" className={mobileLinkClass} onClick={closeMobile}>
-              {tr('nav', 'blog')}
-            </NavLink>
-            {user && (
-              <NavLink to="/saved" className={mobileLinkClass} onClick={closeMobile}>
-                {tr('nav', 'savedJobs')}
-              </NavLink>
-            )}
-            {user && (
-              <NavLink to="/documents" className={mobileLinkClass} onClick={closeMobile}>
-                {tr('nav', 'documents')}
-              </NavLink>
-            )}
-            {user && (
-              <NavLink to="/job-alerts" className={mobileLinkClass} onClick={closeMobile}>
-                {tr('nav', 'alerts')}
-              </NavLink>
-            )}
             {isAdmin && (
               <NavLink to="/admin" className={mobileLinkClass} onClick={closeMobile}>
                 {tr('nav', 'admin')}

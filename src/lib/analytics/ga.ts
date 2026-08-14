@@ -69,8 +69,7 @@ export type AnalyticsEvent =
   | { name: 'document_uploaded'; document_type: string }
   | { name: 'all_in_one_document_uploaded' }
   | { name: 'documents_merged_downloaded'; file_count: number }
-  | { name: 'job_alert_created' }
-  | { name: 'job_saved' }
+  | { name: 'service_request_submitted'; tier: string; payment_method: string }
   | { name: 'sign_up_completed' }
   | { name: 'sign_in_completed' };
 

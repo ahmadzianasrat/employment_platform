@@ -2,14 +2,9 @@
 // this before `npm run build`. Writes public/sitemap.xml, which Vite then
 // copies into dist/ as part of the normal build.
 //
-// Static pages are always included. Blog posts and manually-added job
-// listings (source = 'manual') are fetched live from Supabase's REST API
-// and included too, since those are pages we actually host — unlike most
-// job listings, which link straight to their original source (see
-// src/modules/jobs/lib/jobLink.ts) and so aren't the canonical page for
-// that content. Scraped jobs are deliberately NOT included individually —
-// they're not our canonical page for that content, and they're already
-// covered via the homepage listing them.
+// Static pages are always included. Blog posts are fetched live from
+// Supabase's REST API and included too, since each one is a page we
+// actually host with its own content.
 //
 // Logging is intentionally verbose and specific — three very different
 // situations can all otherwise look identical ("only 4 static URLs in
@@ -32,6 +27,8 @@ const STATIC_PAGES = [
   { path: '/', priority: '1.0', changefreq: 'daily' },
   { path: '/cv-builder', priority: '0.6', changefreq: 'monthly' },
   { path: '/cover-letter', priority: '0.6', changefreq: 'monthly' },
+  { path: '/pricing', priority: '0.8', changefreq: 'monthly' },
+  { path: '/guide', priority: '0.7', changefreq: 'monthly' },
   { path: '/blog', priority: '0.7', changefreq: 'daily' },
 ];
 
@@ -106,17 +103,6 @@ async function main() {
   if (postsResult.ok) {
     for (const post of postsResult.rows) {
       entries.push(urlEntry(`${SITE_URL}/blog/${post.slug}`, post.updated_at?.slice(0, 10), '0.6', 'weekly'));
-    }
-  }
-
-  const jobsResult = await fetchSupabaseTable(
-    'jobs',
-    'select=id,updated_at&source=eq.manual&status=eq.active&order=created_at.desc&limit=500'
-  );
-  logResult('jobs (manual, active)', jobsResult);
-  if (jobsResult.ok) {
-    for (const job of jobsResult.rows) {
-      entries.push(urlEntry(`${SITE_URL}/jobs/${job.id}`, job.updated_at?.slice(0, 10), '0.5', 'weekly'));
     }
   }
 

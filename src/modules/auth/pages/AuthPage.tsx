@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { trackEvent } from '../../../lib/analytics/ga';
@@ -12,6 +12,11 @@ export function AuthPage() {
   const { tr } = useLanguage();
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // OrderPage redirects here with state.redirectTo when a signed-out user
+  // tries to submit a paid-service request, so they land back on the form
+  // (not the homepage) right after signing in.
+  const redirectTo = (location.state as { redirectTo?: string } | null)?.redirectTo ?? '/';
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -34,7 +39,7 @@ export function AuthPage() {
         return;
       }
       trackEvent({ name: 'sign_in_completed' });
-      navigate('/');
+      navigate(redirectTo);
     } else {
       const { error } = await signUp(email, password);
       setSubmitting(false);

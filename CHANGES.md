@@ -694,6 +694,133 @@ re-checking after the next deploy since the image itself just changed.
 
 ---
 
+## Update — Pivot: job board → CV/cover-letter + paid application service: 2026-08-13
+
+Per your numbered request list, this session removed the job board
+entirely and rebuilt the app around its actual core purpose: free CV and
+cover letter tools for everyone, plus a paid service where you prepare a
+customized, ready-to-submit application package for one specific job.
+
+### Removed
+- **Entire jobs module** (`src/modules/jobs/`): job board, job detail
+  page, saved jobs, job alerts — all deleted, along with the profile-
+  completeness widget that only lived on the job board.
+- Admin Jobs page, `adminJobsApi.ts`, duplicate-detection helper
+  (`findDuplicates.ts`) — deleted. The `/admin` route is now Orders (see
+  below), not Jobs.
+- All job-board-related `nav`/`jobBoard`/`jobAlerts`/`profile` i18n
+  strings.
+- Job-board references in the sitemap generator (dropped the per-job
+  `/jobs/:id` entries), `index.html` meta/OG tags, `robots.txt` context,
+  and the SEO canonical-path comment.
+- **Not removed**: the underlying Supabase `jobs`/`saved_jobs`/
+  `job_alerts` tables, and the separate PHP scraper. Both are now dormant
+  (nothing in this app reads or writes them) but left in place — dropping
+  them is optional cleanup for you, not something Claude should do
+  unilaterally to data outside this repo. See "Your part" in `README.md`.
+
+### Added — Home page (`/`, request #1 and #5)
+New landing page (`src/modules/home/pages/HomePage.tsx`) replacing the
+job board as the homepage: hero, a 3-step "how it works" (build for free
+→ or let us do it → get one ready-to-send PDF), a features grid (CV
+Builder, Cover Letter Builder, Document Vault, Paid Application Package),
+a pricing teaser, and a 6-question **FAQ section** (request #5) built on a
+new reusable `FaqAccordion` component (`src/components/ui/FaqAccordion.tsx`).
+
+### Added — Pricing page (`/pricing`, request #2)
+`src/modules/pricing/pages/PricingPage.tsx` — two tier cards: **80 AFN /
+1 job application** and **200 AFN / 3 job applications**, each listing
+what's included (customized CV, customized cover/motivation letter, ID
+card + education + experience attached, one final PDF, submission
+instructions), a payment-methods callout (easy-load / HesabPay, request
+#4), and a "Request this package" button into the order form.
+
+### Added — Guide / education page (`/guide`, request #3)
+`src/modules/guide/pages/GuidePage.tsx` — a single long page with a
+jump-link table of contents, covering exactly what you asked for: using
+the free CV/cover-letter builders, uploading documents, creating a Gmail
+account and keeping credentials safe, sending attachments by Gmail
+without them getting stuck in the queue, how to request paid help, how to
+pay (easy-load and HesabPay, with what to send us and when), finding jobs
+via the two Telegram channels, and "send us any job link or screenshot
+from any platform — we handle the rest."
+
+### Added — Order / paid-service request form (`/order`, request #6)
+`src/modules/orders/` (new module): `OrderPage.tsx` is a sign-in-required
+form covering:
+- Tier selection (1 or 3 applications)
+- Target job: link, free-text note, and/or screenshot upload (at least
+  one required)
+- Contact name + phone
+- Payment method (easy-load / HesabPay) with **method-specific fields**
+  exactly as you specified: HesabPay asks which number they paid from,
+  who owns that number, and when; easy-load asks the agent/own number,
+  when, and an optional transaction number — plus a required payment
+  screenshot for either method
+- `serviceRequestsApi.ts` creates the row then uploads both possible
+  screenshots into the new private `service-requests` storage bucket,
+  reusing the same image-compression path as the document vault
+
+`AuthPage.tsx` was updated to accept a `redirectTo` in router state, so a
+signed-out visitor who hits "Apply for the paid service" and gets bounced
+to sign-in lands back on `/order` afterward instead of the homepage.
+
+### Added — Admin Orders page (`/admin`, replaces `/admin/jobs`)
+`adminOrdersApi.ts` + `AdminOrdersPage.tsx` — lists every request across
+all users (owner email resolved via a new `admin_list_service_request_owners()`
+function, same pattern as the document-owners one from migration 007),
+signed-URL viewing of the job screenshot and payment-proof screenshot,
+search/filter by email/name/phone/job link, and one-click status changes
+(new → in progress → delivered → cancelled).
+
+### Added — SQL migration 015 (`service_requests`)
+New `service_requests` table + private `service-requests` storage
+bucket, following the exact same RLS shape as `document_entries`/
+`documents` (migrations 005–007): a customer sees/creates only their own
+rows, admins see/update every row. **Not yet applied — this is required
+before `/order` or the admin Orders page will work; see `database/migrations/README.md`.**
+
+### Updated for the pivot (request #7 — "all parts should be always translated")
+- `strings.ts`: added fully trilingual (English/Pashto/Dari) copy for the
+  new `home`, `pricing`, `guide`, `order`, and `faq` sections — this is
+  the largest single addition to the i18n file so far. As with the
+  existing legal-page caveat, this is Claude's best-effort Pashto/Dari,
+  not a native speaker's professional pass — worth a careful review
+  given customers will be making real payments based on the Guide page
+  specifically. See "Your part" in `README.md`.
+- `Header.tsx` nav rebuilt: Home, CV Builder, Cover Letter, Pricing,
+  Guide, Blog, My Documents (signed-in only), a prominent "Apply for the
+  paid service" button, Admin (if applicable) — job/saved/alerts links
+  removed.
+- `Footer.tsx` "about" copy rewritten to describe the CV/cover-letter +
+  paid-service model instead of the job-aggregation model.
+- `/privacy` and `/terms`: updated (still English-only, still not legal
+  advice — see the existing note at the top of each file) to cover what
+  data the paid-service request form collects, how admins use it, and
+  added a "Paid application service" terms section covering payment and
+  refund expectations.
+- `scripts/generate-sitemap.mjs`: static-page list now includes
+  `/pricing` and `/guide`; dropped the per-job Supabase fetch.
+
+### Explaining your part (request #9 and #10)
+Rather than repeat it here, the full list of things that need a real
+decision or value from you — running migration 015, the still-placeholder
+Telegram links, where the actual HesabPay/easy-load numbers get shown to
+customers, reviewing the new Pashto/Dari copy, and the fact that
+fulfillment (actually writing each customized CV/cover letter and sending
+the final PDF back) is still a manual step you do per order — is now in
+**README.md, "Your part (things only you can fill in)"**. Flagging it
+there instead of only in this changelog so it stays visible to a fresh
+Claude session or anyone else picking this up later.
+
+### Verified
+- `tsc -b` — clean, no type errors.
+- `vite build` — succeeds; output includes `OrderPage` as its own
+  lazy-loaded chunk (9.91 kB / 2.62 kB gzipped), same pattern as the CV
+  builder / cover letter builder / documents page chunks.
+
+---
+
 ## Running it locally
 ```
 npm install

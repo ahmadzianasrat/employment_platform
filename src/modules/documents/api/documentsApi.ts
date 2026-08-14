@@ -4,10 +4,9 @@ import { MAX_FILE_SIZE_BYTES, ACCEPTED_FILE_TYPES } from '../data/documentTypes'
 import { compressImageIfWorthwhile } from '../../../lib/utils/compressImage';
 
 // Dynamically imported (not a static top-level import) — pdf-lib is a
-// heavy dependency, and documentsApi.ts is reachable from the main
-// bundle via the profile-completeness widget on the job board (which is
-// NOT lazy-loaded). A static import here would drag pdf-lib into every
-// visitor's initial page load just for the upload-compression path.
+// heavy dependency, and DocumentsPage is itself lazy-loaded (see
+// App.tsx), but this keeps pdf-lib out of that chunk's own eager
+// imports too, so it only loads when someone actually uploads a file.
 async function compressForUpload(file: File): Promise<File> {
   if (file.type === 'application/pdf') {
     const { compressPdfIfWorthwhile } = await import('../../../lib/utils/compressPdf');

@@ -19,11 +19,12 @@ export function TermsPage() {
         <section>
           <h2 className="font-display text-base font-semibold text-(--color-lapis)">What Hamqar is</h2>
           <p className="mt-1">
-            Hamqar aggregates publicly available job listings from a number of job boards, and provides tools
-            to help you apply: a CV builder, a cover letter builder, and a private document vault. We are not
-            the employer for any listing shown on this site, and we do not guarantee the accuracy,
-            availability, or legitimacy of any listing — always verify details on the original posting before
-            applying or sharing sensitive information.
+            Hamqar provides free tools to help you apply for jobs — a CV builder, a cover letter builder, and
+            a private document vault — plus a paid service where our team prepares a complete, customized
+            application package (CV, cover letter, and supporting documents as one PDF) for a specific job
+            you send us. We are not the employer for any job you apply to, and we do not guarantee that any
+            job posting you send us is accurate, still available, or legitimate — always use your own
+            judgment about a job posting before applying or sharing sensitive information with an employer.
           </p>
         </section>
 
@@ -40,6 +41,18 @@ export function TermsPage() {
           <p className="mt-1">
             Don't use Hamqar to upload documents that aren't yours, to impersonate someone else, or to misuse
             the platform in a way that could harm other users or the service.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-display text-base font-semibold text-(--color-lapis)">Paid application service</h2>
+          <p className="mt-1">
+            If you request the paid service, you agree to pay the listed price (80 AFN for one job
+            application, or 200 AFN for three) using one of our accepted payment methods — easy-load or
+            HesabPay — and to provide accurate payment details so we can confirm your payment. We begin
+            preparing your package once we've verified your payment. Because this involves real work
+            customized to the job you sent us, payments are generally non-refundable once we've started
+            preparing your package; contact us directly if something has gone wrong with your order.
           </p>
         </section>
 

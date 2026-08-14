@@ -6,22 +6,21 @@ import { initAnalytics, trackPageView } from './lib/analytics/ga';
 import { setCanonicalPath } from './lib/seo/head';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
-import { JobBoardPage } from './modules/jobs/pages/JobBoardPage';
-import { JobDetailPage } from './modules/jobs/pages/JobDetailPage';
-import { SavedJobsPage } from './modules/jobs/pages/SavedJobsPage';
-import { JobAlertsPage } from './modules/jobs/pages/JobAlertsPage';
+import { HomePage } from './modules/home/pages/HomePage';
+import { PricingPage } from './modules/pricing/pages/PricingPage';
+import { GuidePage } from './modules/guide/pages/GuidePage';
 import { AuthPage } from './modules/auth/pages/AuthPage';
-import { AdminJobsPage } from './modules/admin/pages/AdminJobsPage';
 import { AdminDocumentsPage } from './modules/admin/pages/AdminDocumentsPage';
 import { AdminBlogPage } from './modules/admin/pages/AdminBlogPage';
+import { AdminOrdersPage } from './modules/admin/pages/AdminOrdersPage';
 import { BlogListPage } from './modules/blog/pages/BlogListPage';
 import { BlogPostPage } from './modules/blog/pages/BlogPostPage';
 import { PrivacyPolicyPage } from './modules/legal/pages/PrivacyPolicyPage';
 import { TermsPage } from './modules/legal/pages/TermsPage';
 
-// Lazy-loaded: pulls in jsPDF + html2canvas (~250KB gzipped), the single
-// biggest chunk in the app, so visitors who only want the job board never
-// pay for it. See CHANGES.md "Bundle size" note.
+// Lazy-loaded: pulls in jsPDF (~250KB gzipped), the single biggest chunk
+// in the app, so visitors who only want to read the pricing or guide
+// pages never pay for it. See CHANGES.md "Bundle size" note.
 const CvBuilderPage = lazy(() =>
   import('./modules/cv/pages/CvBuilderPage').then((m) => ({ default: m.CvBuilderPage }))
 );
@@ -36,6 +35,12 @@ const CoverLetterBuilderPage = lazy(() =>
 // eagerly imported.
 const DocumentsPage = lazy(() =>
   import('./modules/documents/pages/DocumentsPage').then((m) => ({ default: m.DocumentsPage }))
+);
+
+// Pulls in the image-upload/compression path for the payment screenshot,
+// same reasoning as DocumentsPage — kept out of the main bundle.
+const OrderPage = lazy(() =>
+  import('./modules/orders/pages/OrderPage').then((m) => ({ default: m.OrderPage }))
 );
 
 function RouteFallback() {
@@ -74,8 +79,9 @@ function App() {
             <Header />
             <main className="flex-1">
               <Routes>
-                <Route path="/" element={<JobBoardPage />} />
-                <Route path="/jobs/:id" element={<JobDetailPage />} />
+                <Route path="/" element={<HomePage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/guide" element={<GuidePage />} />
                 <Route
                   path="/cv-builder"
                   element={
@@ -92,10 +98,16 @@ function App() {
                     </Suspense>
                   }
                 />
-                <Route path="/saved" element={<SavedJobsPage />} />
-                <Route path="/job-alerts" element={<JobAlertsPage />} />
+                <Route
+                  path="/order"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <OrderPage />
+                    </Suspense>
+                  }
+                />
                 <Route path="/sign-in" element={<AuthPage />} />
-                <Route path="/admin" element={<AdminJobsPage />} />
+                <Route path="/admin" element={<AdminOrdersPage />} />
                 <Route path="/admin/documents" element={<AdminDocumentsPage />} />
                 <Route path="/admin/blog" element={<AdminBlogPage />} />
                 <Route path="/blog" element={<BlogListPage />} />

@@ -25,26 +25,32 @@ export function PrivacyPolicyPage() {
             When you create an account, we collect your email address. If you use the CV builder, cover
             letter builder, or document vault, we store the information you enter or upload — this can
             include your name, contact details, work history, and scans of identity documents such as ID
-            cards, passports, or diplomas, depending on what you choose to upload.
+            cards, passports, or diplomas, depending on what you choose to upload. If you submit a request
+            for our paid application service, we also store the job link or screenshot you send us, your
+            contact phone number, and the payment details you provide (payment method, sender number,
+            account owner name, and a screenshot of the transaction) so we can confirm your payment and
+            prepare your package.
           </p>
         </section>
 
         <section>
           <h2 className="font-display text-base font-semibold text-(--color-lapis)">How it's stored</h2>
           <p className="mt-1">
-            Your data is stored with Supabase, our database and file storage provider. Uploaded documents are
-            private to your account — other users cannot see them. Site administrators can view uploaded
-            documents to verify them for job applications, but cannot upload, edit, or delete your files on
-            your behalf.
+            Your data is stored with Supabase, our database and file storage provider. Uploaded documents,
+            and any job link, screenshot, or payment proof you submit with a paid-service request, are
+            private to your account — other users cannot see them. Site administrators can view them to
+            verify your documents and your payment, and to prepare your application package, but cannot
+            upload, edit, or delete your files on your behalf.
           </p>
         </section>
 
         <section>
           <h2 className="font-display text-base font-semibold text-(--color-lapis)">How it's used</h2>
           <p className="mt-1">
-            We use your information to operate the site: showing your saved jobs, generating your CV and
-            cover letter PDFs, storing your documents, and sending job alert notifications while you're using
-            the site. We do not sell your data to third parties.
+            We use your information to operate the site: generating your CV and cover letter PDFs, storing
+            your documents, and — if you request our paid service — confirming your payment and preparing
+            the customized CV, cover letter, and document package for the job you're applying to. We do not
+            sell your data to third parties.
           </p>
         </section>
 
@@ -60,8 +66,10 @@ export function PrivacyPolicyPage() {
         <section>
           <h2 className="font-display text-base font-semibold text-(--color-lapis)">Your choices</h2>
           <p className="mt-1">
-            You can remove individual documents, edit your CV and cover letter, or delete job alerts at any
-            time from within the app. To close your account entirely or request removal of your data, contact
+            You can remove individual documents or edit your CV and cover letter at any time from within the
+            app. Submitted paid-service requests can't be edited or deleted from within the app once sent,
+            to keep the payment record clear — contact us if one needs to change. To close your account
+            entirely or request removal of your data, contact
             us at{' '}
             <a href="mailto:support@hamqar.com" className="text-(--color-lapis) hover:underline">
               support@hamqar.com

@@ -88,7 +88,7 @@ provisions a free SSL certificate automatically.
 ## Why GitHub Pages needs an extra trick that Hostinger didn't
 
 Apache (Hostinger) supports `.htaccess` rewrite rules, so a direct link
-to a client-side route like `/jobs/some-id` can be redirected to
+to a client-side route like `/blog/some-slug` can be redirected to
 `index.html` server-side, transparently. GitHub Pages has no equivalent
 server-side rewrite capability — instead, this project uses the standard
 GitHub Pages SPA workaround:
@@ -133,37 +133,45 @@ network requests at all if the measurement ID isn't set.
 Before pointing real traffic (Telegram posts, social shares, etc.) at
 the site:
 
-- [x] **Confirm the `jobs` table has real data.** `useRealtimeJobs.ts`
-      silently falls back to sample/placeholder listings if the table is
-      empty — confirmed showing real scraped jobs.
-- [x] **Run all pending SQL migrations (through 012)** — check
-      `database/migrations/README.md` for what's applied vs. not.
-      **Note**: migrations 013 and 014 were added *after* this was
-      confirmed (expired-job hiding + manual job source relabel) — those
-      still need running, they're new since this checkbox was ticked.
+- [ ] **Run migration 015** (`service_requests` table + `service-requests`
+      storage bucket) — nothing under `/order` or the admin Orders page
+      (`/admin`) works without it. See `database/migrations/README.md`.
+- [ ] **Update the Telegram channel links** in
+      `src/lib/config/channelLinks.ts` — still placeholders
+      (`t.me/pashtoJobs` / `t.me/dariJobs`). The Guide page and Home FAQ
+      both point people at "our two Telegram channels."
+- [ ] **Decide how the HesabPay number and easy-load agent number reach
+      customers** — currently the Guide page says "the number we give
+      you on Telegram," meaning nothing is shown in-app. See the "Your
+      part" section of `README.md` for the two options.
 - [x] **Confirm at least one row exists in `admin_users`** with your own
       user ID, so you can actually access `/admin`. See the comment at
       the bottom of `database/migrations/003_admin_permissions.sql` for
       the exact insert statement.
-- [x] **Push this update and let it deploy once**, then check:
-  - `https://hamqar.com/sitemap.xml` — confirmed working (`[sitemap]`
-    logs showed `fetched OK, 0 row(s)` for both tables — that's correct
-    behavior, not a bug, until you publish a blog post or add a manual
-    job; see the note at the top of `scripts/generate-sitemap.mjs`)
+- [ ] **Push this update and let it deploy once**, then check:
+  - `https://hamqar.com/sitemap.xml` — should now include `/pricing` and
+    `/guide` alongside the previous static pages and blog posts
   - `https://hamqar.com/robots.txt` — should load and reference the
     sitemap
-  - Open Graph preview card — **re-check this one after the next
-    deploy**, since the preview image itself changed in this update (see
-    the note in this session's `CHANGES.md` entry about the new image).
-    Paste `https://hamqar.com` into https://www.opengraph.xyz, or share
-    the link in a private Telegram chat to yourself.
-- [ ] **Read `/privacy` and `/terms`** — these are starting drafts (see
-      the note at the top of each), not reviewed by a lawyer. Worth a
-      look before wide promotion given the site handles ID
-      cards/passports. Leaving this unchecked since it hasn't come up in
-      conversation yet — check it off once you've actually read them.
+  - Open Graph preview card — the title/description changed in this
+    update (job board → CV/cover-letter service), so re-check it. Paste
+    `https://hamqar.com` into https://www.opengraph.xyz, or share the
+    link in a private Telegram chat to yourself. The image itself
+    (`public/og-image.png`) was **not** changed in this update — it still
+    has the flagged watermark/logo issue noted in `README.md`'s "Known
+    open items" in earlier `CHANGES.md` entries; consider replacing it
+    now that the site's purpose has changed anyway.
+- [ ] **Read `/privacy` and `/terms`** — updated this session for the
+      paid service, but still starting drafts (see the note at the top
+      of each), not reviewed by a lawyer. Worth a careful look before
+      wide promotion, since customers are now sending payment details and
+      the site handles ID cards/passports.
+- [ ] **Review the new trilingual copy** (Home, Pricing, Guide, Order
+      form, FAQ) for Pashto/Dari accuracy — see "Your part" in
+      `README.md`.
 - [x] **`VITE_GA_MEASUREMENT_ID` configured** — page views are already
-      showing in GA, so this is live. Feature-usage events (CV/cover
-      letter downloads, document uploads, job alerts, saves, sign-ups)
-      were added this session — give GA a day to start showing them
-      under Reports → Engagement → Events.
+      showing in GA, so this is live. A new feature-usage event,
+      `service_request_submitted` (with tier + payment method), was added
+      this session alongside the existing CV/cover-letter/document
+      events — give GA a day to start showing it under
+      Reports → Engagement → Events.

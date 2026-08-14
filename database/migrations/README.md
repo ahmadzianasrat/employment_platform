@@ -17,8 +17,16 @@ environment (or catching up an existing one that's missing later ones).
 | `010_admin_insert_jobs.sql` | Grants admins INSERT on `jobs` (for the new manual "Add Job" form) | ⏳ Not yet applied — run after 009 |
 | `011_blog.sql` | Creates `blog_posts` table + RLS (public reads published only, admins full CRUD) | ⏳ Not yet applied — run after 010 |
 | `012_cover_letter_profiles.sql` | Creates `cover_letter_profiles` table (one row per user, autosaved from the new Cover Letter Builder) + RLS | ⏳ Not yet applied — run after 011 |
-| `013_expire_old_jobs.sql` | Updates the public jobs RLS policy to exclude jobs past their `expires_on` date, regardless of status; best-effort daily `pg_cron` job to flip status to `'expired'` for admin visibility (safe to skip if `pg_cron` isn't available on your plan) | ⏳ Not yet applied — run after 012 |
-| `014_manual_source_label.sql` | Backfills `source_label` from `'Manual'` to `'Hamqar.com'` on existing manually-added jobs, matching the new app default | ⏳ Not yet applied — run after 013 |
+| `013_expire_old_jobs.sql` | Updates the public jobs RLS policy to exclude jobs past their `expires_on` date, regardless of status; best-effort daily `pg_cron` job to flip status to `'expired'` for admin visibility (safe to skip if `pg_cron` isn't available on your plan) | ⏳ Status unconfirmed as of the last session before the jobs→CV-service pivot — check the Supabase SQL Editor before assuming |
+| `014_manual_source_label.sql` | Backfills `source_label` from `'Manual'` to `'Hamqar.com'` on existing manually-added jobs, matching the new app default | ⏳ Status unconfirmed, same as 013 |
+| `015_service_requests.sql` | Creates `service_requests` table (paid CV/cover-letter application-package orders) + RLS; creates private `service-requests` storage bucket + folder-scoped RLS; adds `admin_list_service_request_owners()` for the admin Orders UI | ⏳ Not yet applied — **run this before the Pricing/Order/Admin-Orders pages will work** |
+
+**Note on 001–004 (`jobs`/`saved_jobs`/`job_alerts` tables):** as of the
+jobs→CV-service pivot (see `CHANGES.md`), no application code reads or
+writes these tables anymore — the job board, saved jobs, and job alerts
+features were removed. The tables themselves have **not** been dropped;
+they're just dormant. Dropping them is optional cleanup the owner can do
+later, not required for the app to work.
 
 Each file is idempotent-unsafe by design (uses `create table`, not
 `create table if not exists`) — running a file twice on the same database
@@ -27,5 +35,5 @@ already applied it and something else is wrong if you're trying again.
 
 ## Adding a new migration
 
-Name the next one `007_description.sql`, add a row to the table above, and
+Name the next one `016_description.sql`, add a row to the table above, and
 note the date/time (Kabul time) it was applied in `CHANGES.md`.
