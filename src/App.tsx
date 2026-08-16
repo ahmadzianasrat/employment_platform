@@ -45,6 +45,13 @@ const OrderPage = lazy(() =>
   import('./modules/orders/pages/OrderPage').then((m) => ({ default: m.OrderPage }))
 );
 
+// Renders the same CvPreview/CoverLetterPreview components as the
+// builders — lightweight on their own, but no reason to ship them to
+// every visitor eagerly when this page isn't part of the core flow.
+const ExamplesPage = lazy(() =>
+  import('./modules/examples/pages/ExamplesPage').then((m) => ({ default: m.ExamplesPage }))
+);
+
 function RouteFallback() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-16 text-center text-sm text-(--color-muted)">Loading…</div>
@@ -83,6 +90,14 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/pricing" element={<PricingPage />} />
+                <Route
+                  path="/examples"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <ExamplesPage />
+                    </Suspense>
+                  }
+                />
                 <Route path="/guide" element={<GuidePage />} />
                 <Route
                   path="/cv-builder"

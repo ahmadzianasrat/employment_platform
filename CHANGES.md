@@ -1070,6 +1070,89 @@ before committing code to any particular design.
 
 ---
 
+## Update — Why-us section, example CVs, testimonial redesign, email notifications, navbar dropdown: 2026-08-16
+
+### 1. "Why go paid" explanation
+Added a 4-reason section to `PricingPage.tsx` (`pricing.whyUs1–4`),
+positioned above the tier cards so the value case lands before the
+price: tailored per job (vs. the free builder's one general CV), a real
+person reviews it, one complete assembled package, and submission
+guidance. Trilingual, follows the established سي وي/کوور ليتر format.
+
+### 2. Example CVs & cover letters page
+New `/examples` route (`modules/examples/`) — 4 CV examples across all
+4 templates (Classic/Modern/Minimal/Compact) and 3 cover letter examples
+across both templates, spanning different fields (nursing, logistics,
+teaching, admin) so a visitor can see the design quality regardless of
+their own line of work. Reuses the exact same `CvPreview`/
+`CoverLetterPreview` components the real builders use, so what's shown
+is pixel-identical to real output, not a mockup.
+
+**Important:** these are invented sample data (`modules/examples/data/sampleData.ts`),
+clearly labeled as illustrative samples on the page itself — not real
+past customer work. Presenting fabricated documents as real deliveries
+to real people would be misleading, the same reasoning that kept
+`testimonials.ts` empty by default last session. If real past
+deliverables become available with the customer's permission (redact
+personal details), swap them in instead — the data file's doc comment
+says as much.
+
+Linked from the Pricing page (under the heading) and from the nav (see
+#6 below).
+
+### 3. Old `jobs` table / PHP scraper status — answered in chat, not a code change
+No code or docs to change here — this was a status question, answered
+directly in the chat response that shipped this update. Short version:
+Claude has no live access to your Supabase project or Hostinger server,
+so this can't be answered from here with certainty; the repo's own
+history only confirms the tables were left in place (not dropped) as of
+the last session. Checking whether the scraper is still actively
+inserting rows requires looking at the `jobs` table's `created_at`
+timestamps directly in the Supabase Table Editor, or checking the
+Hostinger cron job status — both are things only you can check.
+
+### 4. Email notifications via Resend
+New `supabase/functions/notify-job-delivered/index.ts` — a Supabase Edge
+Function triggered by a Database Webhook on `service_request_jobs`
+UPDATE events. Fails silently (a no-op, not an error) on every job-status
+update until `RESEND_API_KEY` is set as a Supabase secret, so it's safe
+to deploy now and finish configuring later. Full step-by-step setup
+(Resend account, secrets, `supabase functions deploy`, wiring the
+Database Webhook, how to test it) added to
+`database/migrations/README.md` under "Email notifications (Resend) —
+one-time setup." Email copy is English-only for now and lives directly
+in the function file — there's no per-user language preference stored
+anywhere in the app yet to know which language to send in.
+
+### 5. Testimonials redesign
+`TestimonialsSection.tsx` rebuilt: initials-in-a-circle avatar (color
+picked deterministically per testimonial, no photo needed), a large
+quote-mark icon as a background accent, hover-lift shadow on each card,
+centered heading with its own icon badge. Still renders nothing at all
+until real testimonials are added to `testimonials.ts` — the emptiness
+guard from last session is unchanged, only the visual treatment for when
+it's populated.
+
+### 6. Navbar: merged Account dropdown + other options (answered in chat)
+Implemented one concrete fix: "My Documents" and "My Profile" now share
+a single "Account" dropdown trigger (click to open, closes on outside
+click) instead of two separate always-visible nav items — a net -1 items
+when signed in, freeing room for the new Examples link without making
+the overflow problem worse. The other options for compressing nav items
+below the `xl:` breakpoint (icon-only items, a general "More" overflow
+menu, different item sets per breakpoint) were discussed in chat as
+alternatives/next steps rather than all implemented at once.
+
+### Verified
+- `tsc -b` — clean, no type errors.
+- `vite build` — succeeds; `ExamplesPage` is its own lazy-loaded chunk
+  (10.05 kB / 3.23 kB gzipped), and pulling it out also gave
+  `CvPreview`/`CoverLetterPreview` their own shared chunks (previously
+  inlined into `CvBuilderPage`/`CoverLetterBuilderPage`'s own bundles) —
+  a small incidental bundle-size win, not just a wash.
+
+---
+
 ## Running it locally
 ```
 npm install

@@ -1,12 +1,61 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../lib/i18n/LanguageContext';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useIsAdmin } from '../../modules/admin/hooks/useIsAdmin';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { BrandMark } from './BrandMark';
-import { IconMenu, IconClose } from '../ui/icons';
+import { IconMenu, IconClose, IconUser, IconChevronDown } from '../ui/icons';
 import { btnPrimary } from '../ui/buttonStyles';
+
+/**
+ * Merges "My Documents" and "My Profile" into a single dropdown trigger
+ * once signed in — two nav items become one, which is one of the few
+ * ways to fit more destinations in a fixed-width navbar without either
+ * shrinking text illegibly or pushing more people into the hamburger
+ * fallback than necessary. See CHANGES.md for the other options
+ * considered (icon-only items, a "More" overflow menu, per-breakpoint
+ * item lists).
+ */
+function AccountMenu() {
+  const { tr } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  const itemClass = 'block rounded-(--radius-md) px-3 py-2 text-sm text-(--color-ink) hover:bg-(--color-lapis)/8';
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-[0.12em] text-white/60 hover:text-white/90"
+      >
+        <IconUser className="h-4 w-4" />
+        {tr('nav', 'account')}
+        <IconChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute end-0 top-full z-10 mt-2 w-44 rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) p-1.5 shadow-lg">
+          <NavLink to="/profile" className={itemClass} onClick={() => setOpen(false)}>
+            {tr('nav', 'profile')}
+          </NavLink>
+          <NavLink to="/documents" className={itemClass} onClick={() => setOpen(false)}>
+            {tr('nav', 'documents')}
+          </NavLink>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Header() {
   const { tr } = useLanguage();
@@ -40,10 +89,9 @@ export function Header() {
     { to: '/cv-builder', key: 'cvBuilder' },
     { to: '/cover-letter', key: 'coverLetter' },
     { to: '/pricing', key: 'pricing' },
+    { to: '/examples', key: 'examples' },
     { to: '/guide', key: 'guide' },
     { to: '/blog', key: 'blog' },
-    { to: '/documents', key: 'documents', requireAuth: true },
-    { to: '/profile', key: 'profile', requireAuth: true },
   ];
 
   return (
@@ -89,6 +137,8 @@ export function Header() {
           </nav>
 
           <LanguageSwitcher />
+
+          {user && <AccountMenu />}
 
           <NavLink to="/order" className={btnPrimary}>
             {tr('nav', 'getStarted')}
@@ -144,6 +194,16 @@ export function Header() {
                   {tr('nav', item.key)}
                 </NavLink>
               ))}
+            {user && (
+              <>
+                <NavLink to="/profile" className={mobileLinkClass} onClick={closeMobile}>
+                  {tr('nav', 'profile')}
+                </NavLink>
+                <NavLink to="/documents" className={mobileLinkClass} onClick={closeMobile}>
+                  {tr('nav', 'documents')}
+                </NavLink>
+              </>
+            )}
             <NavLink to="/order" className={mobileLinkClass} onClick={closeMobile}>
               {tr('nav', 'getStarted')}
             </NavLink>

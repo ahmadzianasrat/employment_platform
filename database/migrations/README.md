@@ -30,5 +30,54 @@ already applied it and something else is wrong if you're trying again.
 
 ## Adding a new migration
 
-Name the next one `016_description.sql`, add a row to the table above, and
+Name the next one `018_description.sql`, add a row to the table above, and
 note the date/time (Kabul time) it was applied in `CHANGES.md`.
+
+## Email notifications (Resend) — one-time setup
+
+`supabase/functions/notify-job-delivered/index.ts` emails a customer
+automatically when an admin marks one of their jobs "delivered." It's
+written and ready to deploy, but does nothing until you complete this
+setup — it fails silently (not an error, just a no-op) if the API key
+below isn't set, so nothing breaks if you deploy the code but haven't
+finished these steps yet.
+
+**You'll need:** the [Supabase CLI](https://supabase.com/docs/guides/cli)
+installed and logged in (`supabase login`), and this repo linked to your
+project (`supabase link --project-ref <your-project-ref>` — find the ref
+in your Supabase dashboard URL).
+
+1. **Create a free Resend account** at [resend.com](https://resend.com)
+   (100 emails/day, 3,000/month free — plenty for order notifications at
+   this scale). Go to *API Keys* and create one.
+2. **Set the two secrets** (replace the key with your real one):
+   ```
+   supabase secrets set RESEND_API_KEY=re_your_actual_key_here
+   supabase secrets set NOTIFY_FROM_EMAIL="Hamqar <onboarding@resend.dev>"
+   ```
+   That `onboarding@resend.dev` address works immediately with no setup
+   and is fine to start with. Once you've verified `hamqar.com` as a
+   sending domain in Resend (adds a couple of DNS records at Hostinger —
+   Resend's dashboard walks you through it), switch this secret to
+   something like `"Hamqar <no-reply@hamqar.com>"` instead, which looks
+   more trustworthy to recipients and avoids spam folders better.
+3. **Deploy the function:**
+   ```
+   supabase functions deploy notify-job-delivered
+   ```
+4. **Wire it up as a Database Webhook:** in the Supabase dashboard, go to
+   *Database → Webhooks → Create a new webhook*. Table:
+   `service_request_jobs`. Events: `Update` only. Type: `Supabase Edge
+   Functions`, and select `notify-job-delivered`. Save.
+5. **Test it:** on the Admin Orders page, upload a CV/cover letter to any
+   job slot and mark it delivered. The customer's email should arrive
+   within a few seconds. Check the function's logs (Supabase dashboard →
+   Edge Functions → notify-job-delivered → Logs) if it doesn't — the
+   function returns a JSON reason for every skip (e.g. `RESEND_API_KEY
+   not set`, `no email for user`) rather than failing silently in a way
+   that's hard to debug.
+
+The email content itself (English-only, currently) lives directly in
+`index.ts` — edit the `html:` string there and redeploy to change the
+wording, or to add Pashto/Dari once you know which language a given
+customer prefers (not something this app currently tracks per user).

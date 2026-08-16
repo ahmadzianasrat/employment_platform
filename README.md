@@ -149,17 +149,25 @@ usable in production.
    Pricing page once you add at least one real, permission-granted quote
    there. Nothing was fabricated; the file has a commented-out example
    showing the format.
+6. **Email notifications need a one-time Resend setup before they'll
+   send anything.** The code is written and deploy-ready
+   (`supabase/functions/notify-job-delivered/`), but it's inert — every
+   trigger just no-ops — until you create a free Resend account, set two
+   Supabase secrets, deploy the function, and wire up a Database Webhook.
+   Full step-by-step in `database/migrations/README.md`, "Email
+   notifications (Resend)."
 
 ## What else could be worth adding
 
-Not built this session, but worth considering for later — see the answers
-to your questions about these in the chat response that shipped this
-update, which go into more depth than fits here:
-- **Automatic email notification** when an admin marks a job delivered
-  (WhatsApp Business API isn't practical for a project this size — email
-  via a free transactional-email service is the realistic path).
-- **A public order-status lookup** for customers without an account.
-- **A referral incentive** for existing customers.
+Not built yet, worth considering for later — see the chat response from
+2026-08-16 for the fuller explanation of each:
+- **A public order-status lookup** for customers without an account —
+  needs a phone-number + short-code lookup through a service-role Edge
+  Function, since an anonymous visitor can't be trusted with a normal
+  RLS-scoped query.
+- **A referral incentive** for existing customers — simplest version is
+  a code shown on the Profile page, entered in the Order form's notes,
+  tracked manually via the Admin Dashboard before automating anything.
 
 ## Known gotchas (read before debugging something that looks broken)
 
@@ -270,6 +278,16 @@ update, which go into more depth than fits here:
   + `src/lib/config/testimonials.ts`): renders nothing at all until you
   add real, permission-granted customer quotes to the config file —
   intentionally ships empty rather than with invented quotes.
+- **Examples page** (`/examples`): sample CV/cover-letter designs across
+  all templates and several fields, using the same preview components as
+  the real builders. Uses invented sample data (`modules/examples/data/sampleData.ts`),
+  clearly labeled on the page as illustrative, not real customer work —
+  same reasoning as testimonials.
+- **Email notifications** (`supabase/functions/notify-job-delivered/`):
+  a Supabase Edge Function + Resend integration that emails a customer
+  when their job is marked delivered. Deployed-ready but inert until you
+  finish the one-time setup — see `database/migrations/README.md`,
+  "Email notifications (Resend)."
 - Admin panel: **Dashboard** (`/admin`) — order counts by status,
   estimated revenue (from tier prices, not a real payment ledger), job
   slots still pending delivery, documents awaiting verification, blog
@@ -332,7 +350,5 @@ update, which go into more depth than fits here:
   reviewed — see "Your part" above
 - A reviewed-by-an-actual-lawyer privacy policy and terms of use (current
   ones are a reasonable starting draft, not legal advice)
-- Automatic delivery notifications (WhatsApp or email) when an admin
-  marks a job delivered — see "What else could be worth adding" above
 - A public order-status lookup for customers without an account
 - A referral/repeat-customer incentive
