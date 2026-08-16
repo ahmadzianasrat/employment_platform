@@ -43,6 +43,7 @@ export function Header() {
     { to: '/guide', key: 'guide' },
     { to: '/blog', key: 'blog' },
     { to: '/documents', key: 'documents', requireAuth: true },
+    { to: '/profile', key: 'profile', requireAuth: true },
   ];
 
   return (

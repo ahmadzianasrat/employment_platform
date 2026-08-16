@@ -30,11 +30,12 @@ export function PricingPage() {
           >
             {t.highlight && (
               <span className="mb-3 inline-block w-fit rounded-full bg-(--color-saffron) px-2.5 py-0.5 text-xs font-semibold text-white">
-                {tr('pricing', 'perApplication')}
+                {tr('pricing', 'bestValue')}
               </span>
             )}
             <h2 className="font-display text-xl font-semibold text-(--color-ink)">{t.name}</h2>
             <p className="mt-1 font-display text-3xl font-bold text-(--color-lapis)">{t.price}</p>
+            {t.key === '3' && <p className="mt-2 text-xs leading-relaxed text-(--color-muted)">{tr('pricing', 'tier3Clarify')}</p>}
             <ul className="mt-5 space-y-2.5 text-sm text-(--color-ink)">
               {includes.map((inc) => (
                 <li key={inc} className="flex gap-2">

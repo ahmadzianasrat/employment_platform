@@ -57,16 +57,17 @@ src/
     auth/                Supabase Auth context
     i18n/                Trilingual strings (STRINGS object) + language context
     supabase/            Supabase client (publishable key only)
-    config/               Telegram channel links — must be updated with real ones, see below
+    config/               Contact config (WhatsApp number, Telegram channel links — Telegram links must be updated with real ones, see below)
   modules/
     home/                Landing page: hero, how-it-works, features, pricing teaser, FAQ
     pricing/             Pricing page (two tier cards)
-    guide/                Education/guide page (free tools, uploads, Gmail, payment, job finding)
-    orders/               Paid-service request form + submission API
+    guide/                Education/guide page (account setup, free tools, uploads, Gmail, payment, job finding)
+    orders/               Paid-service request form (up to 3 job slots) + submission API
+    profile/              Profile page: contact numbers, CV/vault status, order quota, deliverables + API
     cv/                   CV builder + PDF export
     coverLetter/          Cover letter builder + PDF export
     auth/                Sign in / sign up page
-    admin/                Admin: orders review, document review, blog CRUD
+    admin/                Admin: orders review (per-job status + deliverable upload), document review, blog CRUD
     documents/             Document vault (ID card, diplomas, work experience, etc.)
     blog/                  Blog list + post pages
     legal/                 Privacy policy / terms of use
@@ -98,10 +99,16 @@ Supabase's SQL Editor, not automatically.
 
 Current tables in active use: `admin_users`, `document_entries` (with
 `verified`/`verified_at`/`verified_by`), `document_files`, `cv_profiles`,
-`cover_letter_profiles`, `blog_posts`, `service_requests` (new — see
-migration 015). Storage buckets: `documents` (private to the uploading
-user, plus read-only access for admins) and `service-requests` (private,
-same pattern — holds job-post screenshots and payment-proof screenshots).
+`cover_letter_profiles`, `blog_posts`, `service_requests` (order-level:
+tier, contact, payment — see migration 015), `service_request_jobs`
+(job-level: up to 3 rows per order, each with its own target job, status,
+and delivered CV/cover-letter paths — see migration 016), `profiles`
+(mobile + WhatsApp contact numbers, migration 016). Storage buckets:
+`documents` (private to the uploading user, plus read-only access for
+admins), `service-requests` (private, same pattern — job-post screenshots
+and payment-proof screenshots), and `deliverables` (private, admin
+writes/customer reads — the finished CV + cover letter PDF per job,
+migration 016).
 
 The old `jobs`, `saved_jobs`, and `job_alerts` tables still exist in
 Supabase from the previous job-board version but are **no longer read or
@@ -118,51 +125,70 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
 ## Your part (things only you can fill in)
 
 This is a direct answer to "explain my part clearly" — everything below
-needs a real decision or a real value from you before the new pricing/
-guide/order flow is actually usable in production. Nothing here blocks
-the build; the app runs and looks correct without them, but a real
-customer would hit a dead end or send payment to a placeholder.
+needs a real decision or a real value from you before the site is fully
+usable in production. Nothing here blocks the build; the app runs and
+looks correct without them, but a real customer would hit a dead end.
 
-1. **Run migration 015** (`database/migrations/015_service_requests.sql`)
-   in the Supabase SQL Editor. Nothing under `/order` or `/admin` works
-   until this is applied — see `database/migrations/README.md`.
-2. **Real Telegram channel links.** `src/lib/config/channelLinks.ts` still
-   has placeholder URLs (`t.me/pashtoJobs`, `t.me/dariJobs`). The Guide
-   page and Home FAQ both reference "our two Telegram channels" — point
-   these at your actual channels.
-3. **Real HesabPay number.** Nowhere in the app is an actual HesabPay
-   account number shown — by design, since the guide currently tells
-   customers "the number we give you on Telegram." Decide whether you
-   want to display your HesabPay number directly on the Pricing/Guide/
-   Order pages instead (simpler for customers, but public), or keep it
-   Telegram-only (current behavior).
-4. **Easy-load agent number**, if you use one — same choice as above:
-   show it directly in the app, or keep it Telegram-only.
-5. **`support@hamqar.com`** is referenced on the Privacy and Terms pages
-   — confirm this mailbox exists and is checked, or swap in whichever
-   address/Telegram handle you actually want customers contacting.
+1. **Run migrations 015 and 016** (`database/migrations/015_service_requests.sql`,
+   `016_profiles_and_job_slots.sql`) in the Supabase SQL Editor, in order.
+   Nothing under `/order`, `/profile`, or `/admin` works until both are
+   applied — see `database/migrations/README.md`. If 015 was already
+   applied in an earlier session, 016 still needs to run — it normalizes
+   the schema (moves job details into a new `service_request_jobs` table
+   so a tier-3 order can hold 3 separate jobs) and adds `profiles` +
+   the `deliverables` bucket.
+2. **The WhatsApp number is real, the Telegram job-finding channels are
+   still placeholders.** `src/lib/config/channelLinks.ts` now has
+   `+93 70 733 9100` as the primary contact (WhatsApp is used for all
+   "contact us" moments — paid-service questions, payment coordination —
+   per your instruction to drop Telegram as a contact method).
+   `TELEGRAM_PASHTO_URL`/`TELEGRAM_DARI_URL` are unchanged from before —
+   still fake `t.me/...` URLs — since those two channels are for
+   *browsing job listings*, a separate thing from contact. Point those at
+   your real channels before promoting the Guide/Home job-finding section.
+3. **Real HesabPay number.** Still nowhere in the app by design — the
+   guide tells customers "the number we give you on WhatsApp." Decide
+   whether to show it directly on the Pricing/Guide/Order pages instead
+   (simpler for customers, but public), or keep it WhatsApp-only.
+4. **Easy-load agent number**, if you use one — same choice as above.
+5. **`support@hamqar.com`** is still referenced alongside WhatsApp on the
+   Privacy and Terms pages and in the footer — confirm this mailbox
+   exists and is checked.
 6. **Decide the fate of the PHP scraper and old `jobs`/`saved_jobs`/
-   `job_alerts` tables.** The scraper is a separate app outside this repo
-   and is untouched by this change — it will keep running and pushing
-   rows to the old `jobs` table unless you turn it off yourself. Since
-   nothing in this app reads that table anymore, that's wasted Supabase
-   writes/storage, not a bug, but you may want to stop the scraper's cron
-   job on Hostinger.
-7. **Review the Pashto and Dari translations for the new pages** (home,
-   pricing, guide, order form, FAQ). They were written by Claude, not a
-   native speaker's final pass — same caveat that already applied to
-   other trilingual copy in this project, but there's a lot of new text
-   this time (the whole Guide page especially) and it's worth a careful
-   read given customers will be making real payments based on it.
-8. **Decide who counts as "admin."** Same `admin_users` table as before
-   — whoever is already in it can see `/admin` (now the Orders review
-   page), `/admin/documents`, and `/admin/blog`.
-9. **Fulfillment is still manual.** This app collects the request and
-   payment proof; nothing here auto-generates the customized CV/cover
-   letter or auto-sends the final PDF back to the customer. That's still
-   your (or your team's) job per order, using the CV builder/cover letter
-   builder/document vault as your own tools — the Admin Orders page is
-   where you'll see what's owed and mark it delivered once you've sent it.
+   `job_alerts` tables** — unchanged from before, still dormant, still
+   your call whether to stop the scraper's cron job on Hostinger.
+7. **Review the Pashto and Dari translations** — same caveat as before,
+   now covering even more text: the new account-creation guide section,
+   the tier-3 "3 separate jobs" clarification, the Profile page, and
+   every CV/cover-letter mention now using the سي وي / کوور ليټر (کوور
+   ليتر in Dari) + English-term format you specified. Worth a careful
+   native-speaker read given how much of it touches money and documents.
+8. **Decide who counts as "admin"** — unchanged, same `admin_users` table.
+9. **Fulfillment is still manual, but now per-job.** For a tier-3 order,
+   an admin marks each of the up to 3 job slots "in progress"/"delivered"
+   independently on the Admin Orders page, and uploads that job's
+   finished CV + cover letter PDF there — those two files (not the full
+   package with ID card/diplomas/etc., which stays a manual WhatsApp/
+   email delivery) then show up for the customer to download from their
+   Profile page.
+
+## What else could be worth adding
+
+Not built this session, but worth considering for later:
+- **Automatic WhatsApp/email notification** when an admin marks a job
+  delivered — right now the customer only finds out by checking their
+  Profile page or being messaged manually.
+- **A public order-status lookup** (e.g. "check my order" by phone
+  number) for customers who haven't made an account yet, if that ever
+  becomes a support burden.
+- **A simple admin dashboard** — count of new/in-progress/delivered
+  orders, revenue this week/month — once order volume makes eyeballing
+  the list impractical.
+- **Testimonials or a delivered-package example** on the Pricing page,
+  once you have a few real customers willing to be featured — this is
+  usually what convinces a first-time buyer more than the FAQ does.
+- **A referral or repeat-customer incentive**, since word of mouth /
+  Telegram sharing is clearly already part of how people find you.
 
 ## Known gotchas (read before debugging something that looks broken)
 
@@ -239,30 +265,48 @@ customer would hit a dead end or send payment to a placeholder.
 - **Pricing page** (`/pricing`): two tiers — 80 AFN for one job
   application, 200 AFN for three — each listing what's included, with a
   "Request this package" CTA into the order form.
-- **Guide page** (`/guide`): step-by-step, trilingual instructions
-  covering — using the free builders, uploading documents, creating a
-  Gmail account and keeping credentials safe, sending attachments by
-  Gmail without them getting stuck, how to request the paid service, how
-  to pay (easy-load and HesabPay, with what to send us), finding jobs via
-  the two Telegram channels, and "send us any job link/screenshot, we
-  handle the rest."
+- **Guide page** (`/guide`): step-by-step, trilingual instructions, now
+  9 sections — using the free builders, creating and confirming an
+  account (with a note that you need a personal email address), uploading
+  documents, creating a Gmail account and keeping credentials safe,
+  sending attachments by Gmail without them getting stuck, how to request
+  the paid service (WhatsApp), how to pay (easy-load and HesabPay, with
+  what to send us), finding jobs via the two Telegram channels, and "send
+  us any job link/screenshot, we handle the rest."
 - **Order page** (`/order`, sign-in required): the paid-service request
-  form — tier selection, target job link/note/screenshot, contact
-  details, and payment details that branch by method (HesabPay: sender
-  number + account owner name + time; easy-load: agent/own number + time
-  + optional transaction ID), plus a payment-proof screenshot upload.
-  Submits to the new `service_requests` table (migration 015) and the
-  `service-requests` storage bucket.
+  form — tier selection, contact details, payment details that branch by
+  method (HesabPay: sender number + account owner name + time; easy-load:
+  agent/own number + time + optional transaction ID) with a styled
+  file-picker button (not a bare native `<input type="file">`) for the
+  payment screenshot, and **1 to 3 job-target blocks** depending on tier:
+  the tier-3 package is 3 separate jobs, not the same job three times, so
+  the form lets a customer fill in up to 3 independent job
+  links/notes/screenshots, or submit fewer now and add the rest later
+  from their Profile page. Submits to `service_requests` +
+  `service_request_jobs` (migration 016) and the `service-requests`
+  storage bucket.
+- **Profile page** (`/profile`, sign-in required): mobile + WhatsApp
+  contact numbers, saved separately from the per-order contact name/phone
+  on `service_requests` (in case someone orders on behalf of a relative);
+  CV/cover-letter save status with a link into each builder; a document
+  vault completion progress bar (X of N document types uploaded); and,
+  per order, a quota bar for tier-3 packages ("2/3 jobs used") with an
+  "add another job" flow for any unused slots, plus download buttons for
+  each job's delivered CV and cover letter once an admin has uploaded
+  them.
 - **Home page FAQ**: six questions covering whether the builders are
-  free, what the paid package includes, pricing, how to pay, what to do
-  without a job link yet, and data privacy.
-- Admin panel: **Orders** (`/admin`, was `/admin/jobs`) — every paid
-  request across all users, with signed-URL viewing of the job screenshot
-  and payment proof, search/filter, and status management (new → in
-  progress → delivered/cancelled). **Document review** (`/admin/documents`):
-  admins can view/download any user's uploaded documents and mark entries
-  as "verified," but cannot edit, delete, or upload on a user's behalf.
-  **Blog CRUD** (`/admin/blog`).
+  free, what the paid package includes, pricing (now explicit that the
+  200 AFN tier is 3 separate jobs), how to pay, what to do without a job
+  link yet, and data privacy.
+- Admin panel: **Orders** (`/admin`) — every order across all users,
+  shown as a collapsed card (email + name only) that expands on click;
+  each expands to show payment details, every job slot in that order with
+  its own status and a styled upload button for the delivered CV and
+  delivered cover letter PDF, and per-job / per-order status controls
+  (new → in progress → delivered/cancelled). **Document review**
+  (`/admin/documents`): admins can view/download any user's uploaded
+  documents and mark entries as "verified," but cannot edit, delete, or
+  upload on a user's behalf. **Blog CRUD** (`/admin/blog`).
 - Blog (`/blog`, `/blog/:slug`): admin-authored posts (plain text with
   blank-line paragraph breaks), draft vs. published state, optional cover
   image URL, social sharing (native Web Share API where available, plus

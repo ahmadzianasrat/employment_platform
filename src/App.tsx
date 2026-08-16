@@ -13,6 +13,7 @@ import { AuthPage } from './modules/auth/pages/AuthPage';
 import { AdminDocumentsPage } from './modules/admin/pages/AdminDocumentsPage';
 import { AdminBlogPage } from './modules/admin/pages/AdminBlogPage';
 import { AdminOrdersPage } from './modules/admin/pages/AdminOrdersPage';
+import { ProfilePage } from './modules/profile/pages/ProfilePage';
 import { BlogListPage } from './modules/blog/pages/BlogListPage';
 import { BlogPostPage } from './modules/blog/pages/BlogPostPage';
 import { PrivacyPolicyPage } from './modules/legal/pages/PrivacyPolicyPage';
@@ -107,6 +108,7 @@ function App() {
                   }
                 />
                 <Route path="/sign-in" element={<AuthPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<AdminOrdersPage />} />
                 <Route path="/admin/documents" element={<AdminDocumentsPage />} />
                 <Route path="/admin/blog" element={<AdminBlogPage />} />

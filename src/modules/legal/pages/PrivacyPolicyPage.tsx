@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { IconMail, IconWhatsapp } from '../../../components/ui/icons';
+import { SUPPORT_EMAIL, WHATSAPP_URL, WHATSAPP_NUMBER_DISPLAY } from '../../../lib/config/channelLinks';
 
 // English-only, deliberately — unlike the rest of the app's UI copy,
 // legal text carries real liability risk if machine/casually translated
@@ -25,11 +27,14 @@ export function PrivacyPolicyPage() {
             When you create an account, we collect your email address. If you use the CV builder, cover
             letter builder, or document vault, we store the information you enter or upload — this can
             include your name, contact details, work history, and scans of identity documents such as ID
-            cards, passports, or diplomas, depending on what you choose to upload. If you submit a request
-            for our paid application service, we also store the job link or screenshot you send us, your
-            contact phone number, and the payment details you provide (payment method, sender number,
-            account owner name, and a screenshot of the transaction) so we can confirm your payment and
-            prepare your package.
+            cards, passports, or diplomas, depending on what you choose to upload. Your Profile page also
+            lets you save a mobile and/or WhatsApp number, stored separately from any contact number you
+            give on a specific order. If you submit a request for our paid application service, we also
+            store the job link(s) or screenshot(s) you send us, your contact phone number, and the payment
+            details you provide (payment method, sender number, account owner name, and a screenshot of the
+            transaction) so we can confirm your payment and prepare your package — and, once we finish a
+            job in your package, the delivered CV and cover letter files themselves, which stay visible on
+            your Profile page for you to download.
           </p>
         </section>
 
@@ -69,10 +74,15 @@ export function PrivacyPolicyPage() {
             You can remove individual documents or edit your CV and cover letter at any time from within the
             app. Submitted paid-service requests can't be edited or deleted from within the app once sent,
             to keep the payment record clear — contact us if one needs to change. To close your account
-            entirely or request removal of your data, contact
-            us at{' '}
-            <a href="mailto:support@hamqar.com" className="text-(--color-lapis) hover:underline">
-              support@hamqar.com
+            entirely or request removal of your data, message us on WhatsApp at{' '}
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
+              <IconWhatsapp className="h-3.5 w-3.5" />
+              {WHATSAPP_NUMBER_DISPLAY}
+            </a>{' '}
+            or email{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
+              <IconMail className="h-3.5 w-3.5" />
+              {SUPPORT_EMAIL}
             </a>
             .
           </p>
@@ -81,9 +91,15 @@ export function PrivacyPolicyPage() {
         <section>
           <h2 className="font-display text-base font-semibold text-(--color-lapis)">Contact</h2>
           <p className="mt-1">
-            Questions about this policy? Email{' '}
-            <a href="mailto:support@hamqar.com" className="text-(--color-lapis) hover:underline">
-              support@hamqar.com
+            Questions about this policy? WhatsApp is the fastest way to reach us at{' '}
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
+              <IconWhatsapp className="h-3.5 w-3.5" />
+              {WHATSAPP_NUMBER_DISPLAY}
+            </a>
+            , or email{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
+              <IconMail className="h-3.5 w-3.5" />
+              {SUPPORT_EMAIL}
             </a>
             .
           </p>

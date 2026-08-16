@@ -821,6 +821,146 @@ Claude session or anyone else picking this up later.
 
 ---
 
+## Update — WhatsApp contact, Profile page, per-job order slots, terminology fixes: 2026-08-14
+
+Ten numbered requests this session, all addressed:
+
+### 1. WhatsApp as primary contact (Telegram dropped for contact, kept for job-finding)
+`src/lib/config/channelLinks.ts` now exports `WHATSAPP_NUMBER_DISPLAY`
+(`+93 70 733 9100`), `WHATSAPP_URL` (`wa.me` link), and `SUPPORT_EMAIL`.
+Every "contact us" moment — Guide section 6 ("How to get our paid help"),
+Footer, Privacy/Terms contact sections, HesabPay/easy-load "number we
+give you on..." copy — now says WhatsApp instead of Telegram. The two
+Telegram channels (`TELEGRAM_PASHTO_URL`/`TELEGRAM_DARI_URL`, still
+placeholder URLs) are unchanged and unaffected: they're job-listing
+broadcast channels, a different thing from contacting us, and the Guide's
+job-finding section (now #8) still references them.
+
+### 2. Icons throughout
+Added `IconWhatsapp`, `IconPhone`, `IconUser`, `IconUpload`, `IconLink`,
+`IconMail`, `IconWallet`, `IconChevronDown`, `IconFileText` to
+`icons.tsx`. Applied to: Footer (WhatsApp + email contact line, each with
+its icon), every Guide section heading (a small icon badge next to each
+of the 9 section titles), legal-page contact links, and the Order form's
+contact/payment sections.
+
+### 3. Styled file-upload buttons (Order page)
+New `FileInputButton` component (`components/ui/FileInputButton.tsx`) —
+hides the native `<input type="file">` and drives it from a styled
+`<label>`, so it reads as an actual button (dashed border, upload icon,
+turns solid green with a checkmark once a file's selected) instead of the
+browser's bare "Choose file" control. Used for the job screenshot and
+payment-proof uploads on `/order`, and for CV/cover-letter deliverable
+uploads on the admin Orders page.
+
+### 4. New Guide section — creating an account (request #4)
+Inserted as section 2 (everything after renumbered, 8 sections → 9):
+"Creating an account and confirming your email" — covers tapping Sign
+in → Create account, that a **personal email address** is required
+(with a forward-reference to the Gmail section for anyone who doesn't
+have one), and confirming via the emailed link.
+
+### 5. Tier-3 clarified as 3 separate jobs (request #5)
+Added `pricing.tier3Clarify` ("This covers 3 different jobs, not 3 tries
+at the same job...") shown on the Pricing card, the Order form (under
+tier selection), and folded into the Terms page's payment section and
+the Home FAQ price answer. Tier name changed from "3 Job Applications" to
+"3 Separate Job Applications" everywhere it appears.
+
+### 6. Profile page + per-job order tracking (request #6) — the big one
+This needed a real schema change, not just new UI:
+
+**Migration 016** (`016_profiles_and_job_slots.sql`):
+- `profiles` table — `mobile_phone`/`whatsapp_phone` per user, RLS
+  self-access only.
+- `service_requests` is normalized: `target_job_link`/`target_job_note`/
+  `screenshot_storage_path` move out into a new `service_request_jobs`
+  child table, one row per job slot (1 row for tier '1', 1–3 for tier
+  '3'), each with its own `status`, `delivered_cv_storage_path`,
+  `delivered_cover_letter_storage_path`, `delivered_at`. A backfill
+  `insert...select` moves any existing tier-015 order data into a slot-1
+  row before the old columns are dropped, so nothing is lost if 015 was
+  already live.
+- `deliverables` private storage bucket — admin uploads, customer-scoped
+  reads, folder pattern `{user_id}/{job_id}/{filename}`.
+
+**App changes:**
+- `serviceRequestsApi.ts` rewritten: `submitServiceRequest` now creates
+  1–3 `service_request_jobs` rows; new `addJobToRequest` lets a customer
+  fill a remaining slot later; `fetchMyServiceRequests` returns orders
+  with their jobs joined; `getDeliverableFileUrl` for signed download
+  URLs.
+- `OrderPage.tsx` rewritten: tier-3 now shows a `JobTargetFields` block
+  per job (1–3), an "Add another job" button up to the 3-slot cap, and a
+  hint that remaining slots can be filled later from Profile.
+- New `JobTargetFields.tsx` (`modules/orders/components/`) — the
+  link/note/screenshot mini-form, shared between the Order form and the
+  Profile page's "add another job" flow, so the two don't drift.
+- `adminOrdersApi.ts` rewritten with `setJobSlotStatus`,
+  `uploadDeliverable` (uploads to `deliverables`, patches the job row),
+  `markJobDelivered`.
+- **New Profile page** (`/profile`, `modules/profile/`): contact numbers
+  form; CV/cover-letter save status with edit/download links into each
+  builder; a document-vault completion progress bar (count of the 9
+  document types with at least one uploaded entry); per-order quota bar
+  for tier-3 packages ("2/3 used") with inline "add another job"; and,
+  once an admin marks a job delivered, download buttons for that job's
+  CV and cover letter PDFs — deliberately CV + cover letter only, not the
+  full document package (ID card/diplomas/etc.), which stays a manual
+  WhatsApp/email delivery.
+- Nav: added "My Profile" (sign-in required), same pattern as "My
+  Documents."
+
+### 7. سي وي / کوور ليټر terminology (request #7)
+Bulk-replaced every Pashto/Dari occurrence of the old CV term
+(`سي وی`/`سی‌وی`) with `سي وي (CV)`, and every old cover-letter phrasing
+(`د پوښتنلیک لیک`, `د لیوالتیا لیک` in Pashto; `نامه درخواست` in Dari)
+with `کوور ليټر (Cover Letter)` / `کوور ليتر (Cover Letter)` per your
+exact spelling, across `strings.ts` — nav, home, pricing, guide, order,
+FAQ, footer, cv/coverLetter section titles. Spot-checked the output for
+dangling fragments (a couple of "/motivation" leftovers from split
+phrases) and cleaned those up separately.
+
+### 8. Admin Orders page: collapsed by default (request #8)
+`AdminOrdersPage.tsx` rewritten — each order is now a collapsed card
+showing only the owner's email and contact name, with a status pill and
+a chevron; clicking expands it to show payment details, every job slot,
+and the status/deliverable controls. Previously every order rendered
+fully expanded.
+
+### 9. UI polish
+Applied icons and consistent spacing per #2 above; fixed a mislabeled
+"per application" badge on the Pricing page's highlighted tier-3 card
+(now "Best value," which is what the badge was actually trying to
+communicate). Did not do a full page-by-page visual redesign this
+session — the existing lapis/saffron design system (see `index.css`)
+was already distinctive and was extended consistently rather than
+replaced.
+
+### 10. Suggestions for later
+Added a "What else could be worth adding" section to `README.md`:
+automatic WhatsApp/email notification on delivery, a public order-status
+lookup for non-account customers, a simple admin stats dashboard,
+testimonials/example packages on the Pricing page, and a referral
+incentive.
+
+### Verified
+- `tsc -b` — clean, no type errors.
+- `vite build` — succeeds; `OrderPage` and `DocumentsPage` remain
+  separate lazy-loaded chunks; `ProfilePage` is bundled into the main
+  chunk (not lazy-loaded — it's small and has no heavy dependencies like
+  jsPDF/pdf-lib, unlike the builder/vault/order pages).
+
+### Not yet done
+- No dedicated full-site visual redesign pass (see #9 above) — welcome
+  to flag specific pages/screens that feel off and they can get focused
+  attention next session.
+- Migration 016 has **not been run** — required before `/order`,
+  `/profile`, or the admin Orders page will work. See `README.md`,
+  "Your part," item 1.
+
+---
+
 ## Running it locally
 ```
 npm install

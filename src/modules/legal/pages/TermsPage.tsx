@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { IconMail, IconWhatsapp } from '../../../components/ui/icons';
+import { SUPPORT_EMAIL, WHATSAPP_URL, WHATSAPP_NUMBER_DISPLAY } from '../../../lib/config/channelLinks';
 
 // English-only for the same reason as PrivacyPolicyPage — see that file's
 // top comment.
@@ -48,11 +50,14 @@ export function TermsPage() {
           <h2 className="font-display text-base font-semibold text-(--color-lapis)">Paid application service</h2>
           <p className="mt-1">
             If you request the paid service, you agree to pay the listed price (80 AFN for one job
-            application, or 200 AFN for three) using one of our accepted payment methods — easy-load or
-            HesabPay — and to provide accurate payment details so we can confirm your payment. We begin
-            preparing your package once we've verified your payment. Because this involves real work
-            customized to the job you sent us, payments are generally non-refundable once we've started
-            preparing your package; contact us directly if something has gone wrong with your order.
+            application, or 200 AFN for three separate job applications — three different jobs, not one job
+            three times) using one of our accepted payment methods — easy-load or HesabPay — and to provide
+            accurate payment details so we can confirm your payment. On the 3-application tier, you can send
+            us all 3 jobs at once or add the remaining ones later from your Profile page; unused slots on a
+            package don't expire but also aren't refundable for cash. We begin preparing your package once
+            we've verified your payment. Because this involves real work customized to the job(s) you sent
+            us, payments are generally non-refundable once we've started preparing your package; contact us
+            directly if something has gone wrong with your order.
           </p>
         </section>
 
@@ -76,9 +81,15 @@ export function TermsPage() {
         <section>
           <h2 className="font-display text-base font-semibold text-(--color-lapis)">Contact</h2>
           <p className="mt-1">
-            Questions? Email{' '}
-            <a href="mailto:support@hamqar.com" className="text-(--color-lapis) hover:underline">
-              support@hamqar.com
+            Questions? WhatsApp is fastest at{' '}
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
+              <IconWhatsapp className="h-3.5 w-3.5" />
+              {WHATSAPP_NUMBER_DISPLAY}
+            </a>
+            , or email{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
+              <IconMail className="h-3.5 w-3.5" />
+              {SUPPORT_EMAIL}
             </a>
             .
           </p>

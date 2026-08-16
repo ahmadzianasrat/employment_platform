@@ -1,6 +1,6 @@
 import { supabase } from '../../../lib/supabase/client';
 import { compressImageIfWorthwhile } from '../../../lib/utils/compressImage';
-import type { NewServiceRequestInput, ServiceRequest } from '../types/order';
+import type { NewServiceRequestInput, JobTargetInput, ServiceRequestWithJobs } from '../types/order';
 
 const ACCEPTED_IMAGE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024;
@@ -15,22 +15,22 @@ function validateFile(file: File): string | null {
   return null;
 }
 
-async function uploadOne(userId: string, requestId: string, file: File): Promise<{ path: string | null; error: string | null }> {
+async function uploadOne(userId: string, folderId: string, file: File): Promise<{ path: string | null; error: string | null }> {
   const validationError = validateFile(file);
   if (validationError) return { path: null, error: validationError };
 
   const uploadFile = file.type === 'application/pdf' ? file : await compressImageIfWorthwhile(file);
-  const path = `${userId}/${requestId}/${Date.now()}_${uploadFile.name}`;
+  const path = `${userId}/${folderId}/${Date.now()}_${uploadFile.name}`;
   const { error } = await supabase.storage.from('service-requests').upload(path, uploadFile);
   if (error) return { path: null, error: `Upload failed: ${error.message}` };
   return { path, error: null };
 }
 
 /**
- * Creates a service request row first (so we have an id for the storage
- * path), then uploads the target-job screenshot and/or payment-proof
- * screenshot into that request's folder and patches the row with the
- * resulting paths. Mirrors documentsApi.createEntryWithFiles.
+ * Creates the order row, then one service_request_jobs row per job the
+ * customer filled in (1 for tier '1', 1–3 for tier '3'), uploading each
+ * job's screenshot into that job's own folder, plus the payment-proof
+ * screenshot into the order's folder.
  */
 export async function submitServiceRequest(
   userId: string,
@@ -41,8 +41,6 @@ export async function submitServiceRequest(
     .insert({
       user_id: userId,
       tier: input.tier,
-      target_job_link: input.targetJobLink || null,
-      target_job_note: input.targetJobNote || null,
       contact_name: input.contactName,
       contact_phone: input.contactPhone,
       payment_method: input.paymentMethod,
@@ -59,35 +57,88 @@ export async function submitServiceRequest(
     return { error: insertError?.message ?? 'Failed to create the request.' };
   }
 
-  const patch: Record<string, string> = {};
-
-  if (input.screenshotFile) {
-    const { path, error } = await uploadOne(userId, row.id, input.screenshotFile);
-    if (error) return { error };
-    if (path) patch.screenshot_storage_path = path;
-  }
-
   if (input.paymentProofFile) {
     const { path, error } = await uploadOne(userId, row.id, input.paymentProofFile);
     if (error) return { error };
-    if (path) patch.payment_proof_storage_path = path;
+    if (path) {
+      const { error: patchError } = await supabase.from('service_requests').update({ payment_proof_storage_path: path }).eq('id', row.id);
+      if (patchError) return { error: patchError.message };
+    }
   }
 
-  if (Object.keys(patch).length > 0) {
-    const { error: patchError } = await supabase.from('service_requests').update(patch).eq('id', row.id);
-    if (patchError) return { error: patchError.message };
+  for (let i = 0; i < input.jobs.length; i++) {
+    const { error } = await createJobSlot(userId, row.id, i + 1, input.jobs[i]);
+    if (error) return { error };
   }
 
   return { error: null };
 }
 
-export async function fetchMyServiceRequests(userId: string): Promise<ServiceRequest[]> {
-  const { data, error } = await supabase
+async function createJobSlot(
+  userId: string,
+  serviceRequestId: string,
+  slotNumber: number,
+  job: JobTargetInput
+): Promise<{ error: string | null }> {
+  const { data: jobRow, error: jobError } = await supabase
+    .from('service_request_jobs')
+    .insert({
+      service_request_id: serviceRequestId,
+      slot_number: slotNumber,
+      target_job_link: job.targetJobLink || null,
+      target_job_note: job.targetJobNote || null,
+    })
+    .select()
+    .single();
+
+  if (jobError || !jobRow) return { error: jobError?.message ?? 'Failed to save the job.' };
+
+  if (job.screenshotFile) {
+    const { path, error } = await uploadOne(userId, jobRow.id, job.screenshotFile);
+    if (error) return { error };
+    if (path) {
+      const { error: patchError } = await supabase.from('service_request_jobs').update({ screenshot_storage_path: path }).eq('id', jobRow.id);
+      if (patchError) return { error: patchError.message };
+    }
+  }
+
+  return { error: null };
+}
+
+/** Adds one more job to an existing tier-3 order that still has open slots. */
+export async function addJobToRequest(
+  userId: string,
+  serviceRequestId: string,
+  nextSlotNumber: number,
+  job: JobTargetInput
+): Promise<{ error: string | null }> {
+  return createJobSlot(userId, serviceRequestId, nextSlotNumber, job);
+}
+
+export async function fetchMyServiceRequests(userId: string): Promise<ServiceRequestWithJobs[]> {
+  const { data: requests, error } = await supabase
     .from('service_requests')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
-  if (error) return [];
-  return data as ServiceRequest[];
+  if (error || !requests) return [];
+
+  const { data: jobs } = await supabase
+    .from('service_request_jobs')
+    .select('*')
+    .in('service_request_id', requests.map((r) => r.id))
+    .order('slot_number', { ascending: true });
+
+  return requests.map((r) => ({
+    ...r,
+    jobs: (jobs ?? []).filter((j) => j.service_request_id === r.id),
+  })) as ServiceRequestWithJobs[];
+}
+
+/** Signed URL for a delivered CV or cover letter — relies on the user-scoped 'deliverables' bucket policy from migration 016. */
+export async function getDeliverableFileUrl(storagePath: string): Promise<string | null> {
+  const { data, error } = await supabase.storage.from('deliverables').createSignedUrl(storagePath, 60 * 10);
+  if (error || !data) return null;
+  return data.signedUrl;
 }
