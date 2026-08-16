@@ -187,13 +187,19 @@ function OrderCard({ order, onRefresh }: { order: AdminServiceRequest; onRefresh
 
           {error && <p className="mt-3 text-sm text-(--color-danger)">{error}</p>}
 
-          <div className="mt-4 flex flex-wrap gap-2 border-t border-(--color-line) pt-3">
-            <span className="self-center text-xs font-medium text-(--color-muted)">Order status:</span>
-            {STATUS_OPTIONS.map((s) => (
-              <button key={s} disabled={busy || order.status === s} onClick={() => handleOrderStatus(s)} className={btnSecondarySm}>
-                Mark {s.replace('_', ' ')}
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-(--color-line) pt-3">
+            <span className="text-xs font-medium text-(--color-muted)">
+              Order status is set automatically from the job statuses above.
+            </span>
+            {order.status === 'cancelled' ? (
+              <button disabled={busy} onClick={() => handleOrderStatus('in_progress')} className={btnSecondarySm}>
+                Reopen order
               </button>
-            ))}
+            ) : (
+              <button disabled={busy} onClick={() => handleOrderStatus('cancelled')} className={btnSecondarySm}>
+                Cancel order
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { IconMail, IconWhatsapp } from '../../../components/ui/icons';
 import { SUPPORT_EMAIL, WHATSAPP_URL, WHATSAPP_NUMBER_DISPLAY } from '../../../lib/config/channelLinks';
+import { Ltr } from '../../../components/ui/Ltr';
 
 // English-only for the same reason as PrivacyPolicyPage — see that file's
 // top comment.
@@ -84,7 +85,7 @@ export function TermsPage() {
             Questions? WhatsApp is fastest at{' '}
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
               <IconWhatsapp className="h-3.5 w-3.5" />
-              {WHATSAPP_NUMBER_DISPLAY}
+              <Ltr>{WHATSAPP_NUMBER_DISPLAY}</Ltr>
             </a>
             , or email{' '}
             <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">

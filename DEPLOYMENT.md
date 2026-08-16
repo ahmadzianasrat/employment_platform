@@ -133,45 +133,32 @@ network requests at all if the measurement ID isn't set.
 Before pointing real traffic (Telegram posts, social shares, etc.) at
 the site:
 
-- [ ] **Run migration 015** (`service_requests` table + `service-requests`
-      storage bucket) — nothing under `/order` or the admin Orders page
-      (`/admin`) works without it. See `database/migrations/README.md`.
-- [ ] **Update the Telegram channel links** in
-      `src/lib/config/channelLinks.ts` — still placeholders
-      (`t.me/pashtoJobs` / `t.me/dariJobs`). The Guide page and Home FAQ
-      both point people at "our two Telegram channels."
-- [ ] **Decide how the HesabPay number and easy-load agent number reach
-      customers** — currently the Guide page says "the number we give
-      you on Telegram," meaning nothing is shown in-app. See the "Your
-      part" section of `README.md` for the two options.
-- [x] **Confirm at least one row exists in `admin_users`** with your own
-      user ID, so you can actually access `/admin`. See the comment at
-      the bottom of `database/migrations/003_admin_permissions.sql` for
-      the exact insert statement.
+- [ ] **Run migration 017** (`service_requests.status` auto-recompute
+      trigger) — fixes a bug where a tier-3 order kept showing
+      "delivered" after a new job was added to it. Everything through
+      016 is confirmed applied. See `database/migrations/README.md`.
+- [x] **WhatsApp, Telegram contact, easy-load, and HesabPay numbers are
+      all real and live** in `src/lib/config/channelLinks.ts` and shown
+      directly on Pricing/Guide/Order.
+- [x] **Confirm at least one row exists in `admin_users`**
+      (`ahmadzianasrat100@gmail.com` is currently the admin) — see the
+      comment at the bottom of
+      `database/migrations/003_admin_permissions.sql` if you need to add
+      another.
 - [ ] **Push this update and let it deploy once**, then check:
-  - `https://hamqar.com/sitemap.xml` — should now include `/pricing` and
-    `/guide` alongside the previous static pages and blog posts
-  - `https://hamqar.com/robots.txt` — should load and reference the
-    sitemap
-  - Open Graph preview card — the title/description changed in this
-    update (job board → CV/cover-letter service), so re-check it. Paste
-    `https://hamqar.com` into https://www.opengraph.xyz, or share the
-    link in a private Telegram chat to yourself. The image itself
-    (`public/og-image.png`) was **not** changed in this update — it still
-    has the flagged watermark/logo issue noted in `README.md`'s "Known
-    open items" in earlier `CHANGES.md` entries; consider replacing it
-    now that the site's purpose has changed anyway.
-- [ ] **Read `/privacy` and `/terms`** — updated this session for the
-      paid service, but still starting drafts (see the note at the top
-      of each), not reviewed by a lawyer. Worth a careful look before
-      wide promotion, since customers are now sending payment details and
-      the site handles ID cards/passports.
-- [ ] **Review the new trilingual copy** (Home, Pricing, Guide, Order
-      form, FAQ) for Pashto/Dari accuracy — see "Your part" in
-      `README.md`.
-- [x] **`VITE_GA_MEASUREMENT_ID` configured** — page views are already
-      showing in GA, so this is live. A new feature-usage event,
-      `service_request_submitted` (with tier + payment method), was added
-      this session alongside the existing CV/cover-letter/document
-      events — give GA a day to start showing it under
-      Reports → Engagement → Events.
+  - `https://hamqar.com/sitemap.xml` and `https://hamqar.com/robots.txt`
+    still load correctly
+  - Open Graph preview card — paste `https://hamqar.com` into
+    https://www.opengraph.xyz to check it. The image itself
+    (`public/og-image.png`) still has the flagged watermark/logo issue
+    noted in earlier `CHANGES.md` entries; consider replacing it.
+- [ ] **Read `/privacy` and `/terms`** — updated for the paid service and
+      the Profile page's contact numbers, but still starting drafts (see
+      the note at the top of each), not reviewed by a lawyer. Worth a
+      careful look given customers send payment details and ID scans.
+- [ ] **Review the trilingual copy** for Pashto/Dari accuracy — see
+      "Your part" in `README.md`.
+- [x] **`VITE_GA_MEASUREMENT_ID` configured** — page views and
+      feature-usage events (CV/cover-letter downloads, document uploads,
+      `service_request_submitted` with tier + payment method) are live
+      under Reports → Engagement → Events in GA.

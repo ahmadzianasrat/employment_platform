@@ -25,7 +25,7 @@ export const STRINGS = {
     blog: { en: 'Blog', ps: 'ویبلاګ', da: 'وبلاگ' },
     documents: { en: 'My Documents', ps: 'زما اسناد', da: 'اسناد من' },
     profile: { en: 'My Profile', ps: 'زما پروفایل', da: 'پروفایل من' },
-    getStarted: { en: 'Apply for the paid service', ps: 'د مرستې غوښتنه وکړئ', da: 'درخواست خدمات مصارفی' },
+    getStarted: { en: 'Get Started', ps: 'پیل کړئ', da: 'شروع کنید' },
     admin: { en: 'Admin', ps: 'اډمین', da: 'مدیر' },
     signIn: { en: 'Sign in', ps: 'ننوتل', da: 'ورود' },
     signOut: { en: 'Sign out', ps: 'وتل', da: 'خروج' },
@@ -176,6 +176,7 @@ export const STRINGS = {
       da: 'ما پرداخت را از طریق ایزی‌لود (کریدیت موبایل) یا حساب‌پی می‌پذیریم. راهنمای کامل در صفحه راهنما موجود است.',
     },
     ctaButton: { en: 'Request this package', ps: 'دا بسته وغواړئ', da: 'درخواست این بسته' },
+    testimonialsHeading: { en: 'What customers say', ps: 'پیرودونکي څه وایي', da: 'مشتریان چه می‌گویند' },
     faqNote: {
       en: 'Have more questions? See the FAQ on the home page or our guide.',
       ps: 'نورې پوښتنې لرئ؟ د کور په مخ کې پوښتنې وګورئ یا زموږ لارښود ولولئ.',
@@ -258,6 +259,8 @@ export const STRINGS = {
       da: 'کریدیت موبایل (ایزی‌لود) به ارزش قیمت بسته، از شماره خودتان یا از طریق نماینده ایزی‌لود برای ما بفرستید. یک اسکرین‌شات از تراکنش نگه دارید.',
     },
     howToPayHesabTitle: { en: 'HesabPay', ps: 'حساب پی', da: 'حساب‌پی' },
+    ourEasyLoadNumberLabel: { en: 'Our easy-load number', ps: 'زموږ د ایزي لوډ شمېره', da: 'شماره ایزی‌لود ما' },
+    ourHesabPayNumberLabel: { en: 'Our HesabPay number', ps: 'زموږ د حساب پی شمېره', da: 'شماره حساب‌پی ما' },
     howToPayHesabBody: {
       en: 'Send the payment through HesabPay to the number we give you on WhatsApp, and keep a screenshot showing the number you paid from and the time.',
       ps: 'تادیه د حساب پی له لارې هغې شمېرې ته واستوئ چې موږ یې تاسو ته په واټساپ کې درکوو، او یو سکرین شاټ وساتئ چې هغه شمېره او وخت ښیي چې تاسو ترې تادیه کړې.',
@@ -696,6 +699,7 @@ export const STRINGS = {
     },
     contact: { en: 'Contact', ps: 'اړیکه', da: 'تماس' },
     whatsappPreferred: { en: 'WhatsApp (preferred)', ps: 'واټساپ (غوره)', da: 'واتساپ (ترجیحی)' },
+    telegramContact: { en: 'Telegram', ps: 'ټلي ګرام', da: 'تلگرام' },
     aboutHeading: { en: 'About this site', ps: 'د دې سایټ په اړه', da: 'درباره این سایت' },
     rightsReserved: { en: 'All rights reserved.', ps: 'ټول حقونه خوندي دي.', da: 'کلیه حقوق محفوظ است.' },
     followUs: { en: 'Follow our Telegram channels', ps: 'زموږ ټلیګرام چینلونه فالو کړئ', da: 'کانال‌های تلگرام ما را دنبال کنید' },

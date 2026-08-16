@@ -14,10 +14,9 @@ history, then `DEPLOYMENT.md` for the hosting setup.
 > **August 2026 note:** this used to be a job board that aggregated
 > listings via a separate PHP scraper. That has been removed — see
 > "Pivot: job board → CV/cover-letter + paid application service" in
-> `CHANGES.md` for what changed and why, and "Owner's part" below for
-> what still needs to be filled in before this can go live in its new
-> form. The old `jobs` table and the PHP scraper still exist but are no
-> longer used by this app — see "Known gotchas" #6 below.
+> `CHANGES.md` for what changed and why. All migrations through 016 have
+> been run in production; migration 017 (auto status recompute) still
+> needs to run — see "Your part" below.
 
 ## Live site
 `https://hamqar.com` — hosted on GitHub Pages, domain + email through Hostinger.
@@ -67,7 +66,7 @@ src/
     cv/                   CV builder + PDF export
     coverLetter/          Cover letter builder + PDF export
     auth/                Sign in / sign up page
-    admin/                Admin: orders review (per-job status + deliverable upload), document review, blog CRUD
+    admin/                Admin: dashboard, orders review (per-job status + deliverable upload), document review, blog CRUD
     documents/             Document vault (ID card, diplomas, work experience, etc.)
     blog/                  Blog list + post pages
     legal/                 Privacy policy / terms of use
@@ -110,11 +109,6 @@ and payment-proof screenshots), and `deliverables` (private, admin
 writes/customer reads — the finished CV + cover letter PDF per job,
 migration 016).
 
-The old `jobs`, `saved_jobs`, and `job_alerts` tables still exist in
-Supabase from the previous job-board version but are **no longer read or
-written by this app**. They're harmless to leave in place; dropping them
-is optional cleanup, not required — see "Owner's part" below.
-
 ## Deployment
 See `DEPLOYMENT.md` for the full walkthrough. Short version:
 - Push to `main` → GitHub Actions builds and deploys to GitHub Pages automatically
@@ -126,69 +120,46 @@ See `DEPLOYMENT.md` for the full walkthrough. Short version:
 
 This is a direct answer to "explain my part clearly" — everything below
 needs a real decision or a real value from you before the site is fully
-usable in production. Nothing here blocks the build; the app runs and
-looks correct without them, but a real customer would hit a dead end.
+usable in production.
 
-1. **Run migrations 015 and 016** (`database/migrations/015_service_requests.sql`,
-   `016_profiles_and_job_slots.sql`) in the Supabase SQL Editor, in order.
-   Nothing under `/order`, `/profile`, or `/admin` works until both are
-   applied — see `database/migrations/README.md`. If 015 was already
-   applied in an earlier session, 016 still needs to run — it normalizes
-   the schema (moves job details into a new `service_request_jobs` table
-   so a tier-3 order can hold 3 separate jobs) and adds `profiles` +
-   the `deliverables` bucket.
-2. **The WhatsApp number is real, the Telegram job-finding channels are
-   still placeholders.** `src/lib/config/channelLinks.ts` now has
-   `+93 70 733 9100` as the primary contact (WhatsApp is used for all
-   "contact us" moments — paid-service questions, payment coordination —
-   per your instruction to drop Telegram as a contact method).
-   `TELEGRAM_PASHTO_URL`/`TELEGRAM_DARI_URL` are unchanged from before —
-   still fake `t.me/...` URLs — since those two channels are for
-   *browsing job listings*, a separate thing from contact. Point those at
-   your real channels before promoting the Guide/Home job-finding section.
-3. **Real HesabPay number.** Still nowhere in the app by design — the
-   guide tells customers "the number we give you on WhatsApp." Decide
-   whether to show it directly on the Pricing/Guide/Order pages instead
-   (simpler for customers, but public), or keep it WhatsApp-only.
-4. **Easy-load agent number**, if you use one — same choice as above.
-5. **`support@hamqar.com`** is still referenced alongside WhatsApp on the
-   Privacy and Terms pages and in the footer — confirm this mailbox
-   exists and is checked.
-6. **Decide the fate of the PHP scraper and old `jobs`/`saved_jobs`/
-   `job_alerts` tables** — unchanged from before, still dormant, still
-   your call whether to stop the scraper's cron job on Hostinger.
-7. **Review the Pashto and Dari translations** — same caveat as before,
-   now covering even more text: the new account-creation guide section,
-   the tier-3 "3 separate jobs" clarification, the Profile page, and
-   every CV/cover-letter mention now using the سي وي / کوور ليټر (کوور
-   ليتر in Dari) + English-term format you specified. Worth a careful
-   native-speaker read given how much of it touches money and documents.
-8. **Decide who counts as "admin"** — unchanged, same `admin_users` table.
-9. **Fulfillment is still manual, but now per-job.** For a tier-3 order,
+1. **Run migration 017** (`database/migrations/017_auto_status_recompute.sql`).
+   Everything through 016 is confirmed applied. 017 fixes the bug where a
+   tier-3 order kept showing "delivered" after a new job was added to it
+   — see `CHANGES.md` for the full explanation.
+2. **Confirm `admin_users` has the right people in it.**
+   `ahmadzianasrat100@gmail.com` was added this session — if that's the
+   only admin you want for now, nothing else to do; add more the same way
+   (see the insert statement at the bottom of
+   `database/migrations/003_admin_permissions.sql`).
+3. **Review the Pashto and Dari translations** — same caveat as before:
+   AI-translated, not a native speaker's final pass. Worth a careful read
+   given how much of the site now touches money, documents, and account
+   creation.
+4. **Fulfillment is still manual, but now per-job.** For a tier-3 order,
    an admin marks each of the up to 3 job slots "in progress"/"delivered"
    independently on the Admin Orders page, and uploads that job's
    finished CV + cover letter PDF there — those two files (not the full
    package with ID card/diplomas/etc., which stays a manual WhatsApp/
    email delivery) then show up for the customer to download from their
-   Profile page.
+   Profile page. The order's own status (shown at the top of each card)
+   now updates itself automatically from its jobs — you never set it
+   directly except to cancel/reopen an order.
+5. **Testimonials are empty by default, deliberately.** See
+   `src/lib/config/testimonials.ts` — the section only appears on the
+   Pricing page once you add at least one real, permission-granted quote
+   there. Nothing was fabricated; the file has a commented-out example
+   showing the format.
 
 ## What else could be worth adding
 
-Not built this session, but worth considering for later:
-- **Automatic WhatsApp/email notification** when an admin marks a job
-  delivered — right now the customer only finds out by checking their
-  Profile page or being messaged manually.
-- **A public order-status lookup** (e.g. "check my order" by phone
-  number) for customers who haven't made an account yet, if that ever
-  becomes a support burden.
-- **A simple admin dashboard** — count of new/in-progress/delivered
-  orders, revenue this week/month — once order volume makes eyeballing
-  the list impractical.
-- **Testimonials or a delivered-package example** on the Pricing page,
-  once you have a few real customers willing to be featured — this is
-  usually what convinces a first-time buyer more than the FAQ does.
-- **A referral or repeat-customer incentive**, since word of mouth /
-  Telegram sharing is clearly already part of how people find you.
+Not built this session, but worth considering for later — see the answers
+to your questions about these in the chat response that shipped this
+update, which go into more depth than fits here:
+- **Automatic email notification** when an admin marks a job delivered
+  (WhatsApp Business API isn't practical for a project this size — email
+  via a free transactional-email service is the realistic path).
+- **A public order-status lookup** for customers without an account.
+- **A referral incentive** for existing customers.
 
 ## Known gotchas (read before debugging something that looks broken)
 
@@ -226,16 +197,13 @@ Not built this session, but worth considering for later:
    `index.html` redirect trick — don't remove these thinking they're
    dead code.
 
-6. **The old `jobs` table and PHP scraper are dormant, not deleted.**
-   As of this change, no code in this repo reads or writes the `jobs`,
-   `saved_jobs`, or `job_alerts` tables anymore. The PHP scraper (a
-   separate app on Hostinger) is untouched by this change and will keep
-   running unless stopped independently — see "Your part" above.
-
-7. **Telegram channel links are still placeholders.**
-   `src/lib/config/channelLinks.ts` has `TELEGRAM_PASHTO_URL` /
-   `TELEGRAM_DARI_URL` set to fake URLs — must be updated before real
-   users click them (see "Your part" above).
+6. **Job-slot order status is trigger-computed, not stored freely.**
+   `service_requests.status` is recalculated by a database trigger
+   (migration 017) from its `service_request_jobs` rows every time a job
+   is added or its status changes. Don't try to set it to
+   `new`/`in_progress`/`delivered` directly from application code —
+   it'll just get overwritten on the next job change. `cancelled` is the
+   one status the trigger leaves alone.
 
 ## Features implemented so far
 - CV builder with PDF export (personal info, education, experience,
@@ -298,12 +266,24 @@ Not built this session, but worth considering for later:
   free, what the paid package includes, pricing (now explicit that the
   200 AFN tier is 3 separate jobs), how to pay, what to do without a job
   link yet, and data privacy.
-- Admin panel: **Orders** (`/admin`) — every order across all users,
-  shown as a collapsed card (email + name only) that expands on click;
-  each expands to show payment details, every job slot in that order with
-  its own status and a styled upload button for the delivered CV and
-  delivered cover letter PDF, and per-job / per-order status controls
-  (new → in progress → delivered/cancelled). **Document review**
+- **Testimonials on Pricing** (`src/components/ui/TestimonialsSection.tsx`
+  + `src/lib/config/testimonials.ts`): renders nothing at all until you
+  add real, permission-granted customer quotes to the config file —
+  intentionally ships empty rather than with invented quotes.
+- Admin panel: **Dashboard** (`/admin`) — order counts by status,
+  estimated revenue (from tier prices, not a real payment ledger), job
+  slots still pending delivery, documents awaiting verification, blog
+  drafts, and the 5 most recent orders, with quick links into the other
+  admin pages. **Orders** (`/admin/orders`) — every order across all
+  users, shown as a collapsed card (email + name only) that expands on
+  click; each expands to show payment details, every job slot in that
+  order with its own status and a styled upload button for the delivered
+  CV and delivered cover letter PDF, and per-job status controls. The
+  order's own status (new/in progress/delivered) is computed
+  automatically from its jobs by a database trigger (migration 017) —
+  admins only manually cancel/reopen an order, never set
+  in-progress/delivered by hand, which fixes a bug where an order kept
+  showing "delivered" after a new job was added to it. **Document review**
   (`/admin/documents`): admins can view/download any user's uploaded
   documents and mark entries as "verified," but cannot edit, delete, or
   upload on a user's behalf. **Blog CRUD** (`/admin/blog`).
@@ -352,6 +332,7 @@ Not built this session, but worth considering for later:
   reviewed — see "Your part" above
 - A reviewed-by-an-actual-lawyer privacy policy and terms of use (current
   ones are a reasonable starting draft, not legal advice)
-- Automatic cleanup/removal of the old `jobs`/`saved_jobs`/`job_alerts`
-  tables and the PHP scraper (left running/in place deliberately — see
-  "Your part" above)
+- Automatic delivery notifications (WhatsApp or email) when an admin
+  marks a job delivered — see "What else could be worth adding" above
+- A public order-status lookup for customers without an account
+- A referral/repeat-customer incentive

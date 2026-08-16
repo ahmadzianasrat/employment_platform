@@ -6,8 +6,10 @@ import { submitServiceRequest } from '../api/serviceRequestsApi';
 import { trackEvent } from '../../../lib/analytics/ga';
 import { btnPrimary, btnSecondary, btnSecondarySm } from '../../../components/ui/buttonStyles';
 import { FileInputButton } from '../../../components/ui/FileInputButton';
+import { Ltr } from '../../../components/ui/Ltr';
 import { JobTargetFields } from '../components/JobTargetFields';
 import { IconCheck, IconPlus, IconTrash, IconUser, IconPhone, IconWallet, IconWhatsapp } from '../../../components/ui/icons';
+import { EASYLOAD_NUMBER_DISPLAY, HESABPAY_NUMBER_DISPLAY } from '../../../lib/config/channelLinks';
 import type { PaymentMethod, PricingTier, JobTargetInput } from '../types/order';
 
 const EMPTY_JOB: JobTargetInput = { targetJobLink: '', targetJobNote: '', screenshotFile: null };
@@ -252,6 +254,9 @@ export function OrderPage() {
 
           {paymentMethod === 'hesab_pay' ? (
             <div className="space-y-3 rounded-(--radius-md) border border-(--color-line) p-4">
+              <p className="rounded-(--radius-md) bg-(--color-lapis)/8 px-3 py-2 text-sm font-medium text-(--color-ink)">
+                {tr('guide', 'ourHesabPayNumberLabel')}: <Ltr className="font-semibold text-(--color-lapis)">{HESABPAY_NUMBER_DISPLAY}</Ltr>
+              </p>
               <div>
                 <label className={labelClass}>{tr('order', 'hesabNumberLabel')}</label>
                 <input type="text" value={paymentSenderNumber} onChange={(e) => setPaymentSenderNumber(e.target.value)} className={inputClass} />
@@ -267,6 +272,9 @@ export function OrderPage() {
             </div>
           ) : (
             <div className="space-y-3 rounded-(--radius-md) border border-(--color-line) p-4">
+              <p className="rounded-(--radius-md) bg-(--color-lapis)/8 px-3 py-2 text-sm font-medium text-(--color-ink)">
+                {tr('guide', 'ourEasyLoadNumberLabel')}: <Ltr className="font-semibold text-(--color-lapis)">{EASYLOAD_NUMBER_DISPLAY}</Ltr>
+              </p>
               <div>
                 <label className={labelClass}>{tr('order', 'easyLoadNumberLabel')}</label>
                 <input type="text" value={paymentSenderNumber} onChange={(e) => setPaymentSenderNumber(e.target.value)} className={inputClass} />

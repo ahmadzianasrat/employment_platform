@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { btnPrimary, btnSecondary } from '../../../components/ui/buttonStyles';
 import { IconCheck, IconWallet } from '../../../components/ui/icons';
+import { Ltr } from '../../../components/ui/Ltr';
+import { TestimonialsSection } from '../../../components/ui/TestimonialsSection';
+import { EASYLOAD_NUMBER_DISPLAY, HESABPAY_NUMBER_DISPLAY } from '../../../lib/config/channelLinks';
 
 export function PricingPage() {
   const { tr } = useLanguage();
@@ -53,6 +56,8 @@ export function PricingPage() {
 
       <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-(--color-muted)">{tr('pricing', 'deliveryNote')}</p>
 
+      <TestimonialsSection />
+
       <div className="mx-auto mt-12 max-w-2xl rounded-(--radius-lg) border border-(--color-line) bg-(--color-paper-raised) p-6">
         <div className="flex items-center gap-2.5">
           <IconWallet className="h-5 w-5 text-(--color-lapis)" />
@@ -60,10 +65,10 @@ export function PricingPage() {
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
           <span className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper) px-3 py-1.5 text-sm font-semibold text-(--color-ink)">
-            {tr('pricing', 'easyLoad')}
+            {tr('pricing', 'easyLoad')}: <Ltr className="text-(--color-lapis)">{EASYLOAD_NUMBER_DISPLAY}</Ltr>
           </span>
           <span className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper) px-3 py-1.5 text-sm font-semibold text-(--color-ink)">
-            {tr('pricing', 'hesabPay')}
+            {tr('pricing', 'hesabPay')}: <Ltr className="text-(--color-lapis)">{HESABPAY_NUMBER_DISPLAY}</Ltr>
           </span>
         </div>
         <p className="mt-3 text-sm text-(--color-muted)">{tr('pricing', 'paymentMethodsBody')}</p>

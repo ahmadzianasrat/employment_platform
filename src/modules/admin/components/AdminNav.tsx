@@ -11,6 +11,9 @@ export function AdminNav() {
   return (
     <div className="mb-6 flex gap-2 border-b border-(--color-line) pb-4">
       <NavLink to="/admin" end className={tabClass}>
+        Dashboard
+      </NavLink>
+      <NavLink to="/admin/orders" className={tabClass}>
         Orders
       </NavLink>
       <NavLink to="/admin/documents" className={tabClass}>

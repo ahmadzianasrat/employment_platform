@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { IconMail, IconWhatsapp } from '../../../components/ui/icons';
 import { SUPPORT_EMAIL, WHATSAPP_URL, WHATSAPP_NUMBER_DISPLAY } from '../../../lib/config/channelLinks';
+import { Ltr } from '../../../components/ui/Ltr';
 
 // English-only, deliberately — unlike the rest of the app's UI copy,
 // legal text carries real liability risk if machine/casually translated
@@ -77,7 +78,7 @@ export function PrivacyPolicyPage() {
             entirely or request removal of your data, message us on WhatsApp at{' '}
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
               <IconWhatsapp className="h-3.5 w-3.5" />
-              {WHATSAPP_NUMBER_DISPLAY}
+              <Ltr>{WHATSAPP_NUMBER_DISPLAY}</Ltr>
             </a>{' '}
             or email{' '}
             <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
@@ -94,7 +95,7 @@ export function PrivacyPolicyPage() {
             Questions about this policy? WhatsApp is the fastest way to reach us at{' '}
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">
               <IconWhatsapp className="h-3.5 w-3.5" />
-              {WHATSAPP_NUMBER_DISPLAY}
+              <Ltr>{WHATSAPP_NUMBER_DISPLAY}</Ltr>
             </a>
             , or email{' '}
             <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex items-center gap-1 text-(--color-lapis) hover:underline">

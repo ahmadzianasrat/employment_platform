@@ -1,7 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
-import { TELEGRAM_PASHTO_URL, TELEGRAM_DARI_URL, WHATSAPP_URL, WHATSAPP_NUMBER_DISPLAY } from '../../../lib/config/channelLinks';
+import {
+  TELEGRAM_PASHTO_URL,
+  TELEGRAM_DARI_URL,
+  TELEGRAM_CONTACT_URL,
+  WHATSAPP_URL,
+  WHATSAPP_NUMBER_DISPLAY,
+  EASYLOAD_NUMBER_DISPLAY,
+  HESABPAY_NUMBER_DISPLAY,
+} from '../../../lib/config/channelLinks';
 import { btnPrimary, btnSecondary } from '../../../components/ui/buttonStyles';
+import { Ltr } from '../../../components/ui/Ltr';
 import { IconTelegram, IconWhatsapp, IconMail, IconUser } from '../../../components/ui/icons';
 
 function Section({ id, heading, icon, children }: { id: string; heading: string; icon: React.ReactNode; children: React.ReactNode }) {
@@ -88,7 +97,11 @@ export function GuidePage() {
           <div className="flex flex-wrap gap-2 pt-1">
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={btnPrimary}>
               <IconWhatsapp />
-              {tr('guide', 'whatsappCtaLabel')} ({WHATSAPP_NUMBER_DISPLAY})
+              {tr('guide', 'whatsappCtaLabel')} (<Ltr>{WHATSAPP_NUMBER_DISPLAY}</Ltr>)
+            </a>
+            <a href={TELEGRAM_CONTACT_URL} target="_blank" rel="noopener noreferrer" className={btnSecondary}>
+              <IconTelegram />
+              {tr('footer', 'telegramContact')}
             </a>
             <Link to="/order" className={btnSecondary}>
               {tr('guide', 'orderCta')}
@@ -100,10 +113,16 @@ export function GuidePage() {
           <div className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) p-4">
             <h3 className="font-semibold text-(--color-ink)">{tr('guide', 'howToPayEasyLoadTitle')}</h3>
             <p className="mt-1">{tr('guide', 'howToPayEasyLoadBody')}</p>
+            <p className="mt-2 text-sm font-semibold text-(--color-ink)">
+              {tr('guide', 'ourEasyLoadNumberLabel')}: <Ltr className="text-(--color-lapis)">{EASYLOAD_NUMBER_DISPLAY}</Ltr>
+            </p>
           </div>
           <div className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) p-4">
             <h3 className="font-semibold text-(--color-ink)">{tr('guide', 'howToPayHesabTitle')}</h3>
             <p className="mt-1">{tr('guide', 'howToPayHesabBody')}</p>
+            <p className="mt-2 text-sm font-semibold text-(--color-ink)">
+              {tr('guide', 'ourHesabPayNumberLabel')}: <Ltr className="text-(--color-lapis)">{HESABPAY_NUMBER_DISPLAY}</Ltr>
+            </p>
           </div>
           <div className="rounded-(--radius-md) border border-(--color-line) bg-(--color-paper-raised) p-4">
             <h3 className="font-semibold text-(--color-ink)">{tr('guide', 'howToPayAfterTitle')}</h3>

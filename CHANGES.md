@@ -961,6 +961,115 @@ incentive.
 
 ---
 
+## Update — Navbar overflow, RTL numbers, order-status bug, real contact numbers, admin dashboard, testimonials: 2026-08-15
+
+Eight items this session, all addressed:
+
+### 1. Desktop navbar overflow
+`Header.tsx`: the full desktop nav now only renders at `xl:` (1280px)
+instead of `lg:` (1024px) — the 8-item nav plus language switcher plus
+Get Started button plus sign-in genuinely doesn't fit below ~1280px, so
+narrower desktop windows now correctly fall back to the hamburger menu
+instead of the nav spilling past the viewport. Also shortened the
+"Apply for the paid service" button label to "Get Started" to free up
+width.
+
+### 2. RTL phone-number reversal
+New `<Ltr>` component (`components/ui/Ltr.tsx`) — wraps a span in
+`dir="ltr"` + `unicode-bidi: isolate`, which pins a number's internal
+digit order regardless of the surrounding text's direction. Without it,
+a phone number sitting inside Pashto/Dari (RTL) text gets its
+punctuation/digit runs reordered by the browser's bidi algorithm — e.g.
+`+93 70 733 9100` was rendering as `00193370739+`. Applied everywhere a
+known phone number is printed as static text: Footer, Guide, Pricing,
+Order form, legal pages.
+
+### 3. Order status stuck on "delivered" after adding a new job
+Root cause: `service_requests.status` was a plain column the admin UI
+set by hand, with nothing tying it back to the job slots underneath it —
+so delivering job 1 of a tier-3 order (with a "mark order delivered"
+click) left the order shown as delivered even after the customer added
+job 2 via their Profile page. Fixed at the database level, not just in
+the UI, since this needs to be correct regardless of which admin screen
+touches it: new migration `017_auto_status_recompute.sql` adds a trigger
+on `service_request_jobs` that recomputes the parent
+`service_requests.status` after every insert or status change — `new`
+with zero jobs, `in_progress` if any job is pending or if a tier-3 order
+still has fewer than 3 job slots (even if the existing ones are all
+delivered), `delivered` only once every slot up to the tier's count is
+delivered. `cancelled` is left untouched by the trigger (an admin's
+explicit cancel shouldn't be silently undone by a job update). Updated
+`AdminOrdersPage.tsx` to match: removed the manual new/in-progress/
+delivered buttons at the order level (they'd just get overwritten by the
+trigger), replaced with a single cancel/reopen toggle.
+
+### 4. Telegram as a secondary contact option (using the confirmed real number)
+Added `TELEGRAM_CONTACT_URL` (`t.me/+93707339100`) to
+`channelLinks.ts`, shown alongside WhatsApp in the Footer and the Guide's
+"How to get our paid help" section. Per your clarification, the existing
+`TELEGRAM_PASHTO_URL`/`TELEGRAM_DARI_URL` job-listing channels were never
+placeholders — removed the "still placeholder, update before promoting"
+language about them from `README.md`/`DEPLOYMENT.md`.
+
+### 5. Real easy-load and HesabPay numbers, shown directly in the app
+`EASYLOAD_NUMBER_DISPLAY` (`0707339100`) and `HESABPAY_NUMBER_DISPLAY`
+(`+93707339100`) added to `channelLinks.ts` and now shown directly —
+resolving the "WhatsApp-only vs. show it in-app" open question from last
+session — on the Pricing page's payment-methods box, the Guide's
+"How to pay us" section, and inline in the Order form's payment fields
+(so a customer sees exactly which number to send to right next to the
+field asking which number *they* paid from).
+
+### 6. Confirmed live: migrations, support email, admin
+No code changes needed — updated `database/migrations/README.md` to mark
+007–016 as ✅ Applied (was previously showing several as pending/
+unconfirmed), and noted `ahmadzianasrat100@gmail.com` as the current
+admin in `README.md`'s "Your part."
+
+### 7. Removed the PHP-scraper/old-tables discussion entirely
+Per your instruction, stripped the "decide the fate of the scraper and
+`jobs`/`saved_jobs`/`job_alerts` tables" bullet and its related mentions
+from `README.md`'s "Your part," "Known gotchas," and "Not built yet"
+sections, and from `DEPLOYMENT.md`'s checklist. (The one-line historical
+note at the very top of `README.md` — "this used to be a job board... —
+see CHANGES.md" — was left as-is; it's a factual pointer to the pivot
+history, not part of the ongoing scraper-decision discussion you asked
+to remove.)
+
+### 8. Admin dashboard + testimonials (built), plus three questions answered in chat
+Built:
+- **Admin Dashboard** (`/admin`, Orders moved to `/admin/orders`):
+  order counts by status, an estimated-revenue figure (sum of tier
+  prices for non-cancelled orders — explicitly labeled as an estimate,
+  not a real payment ledger, since it doesn't check whether every job in
+  an order is actually delivered), job slots still pending, documents
+  awaiting verification, blog drafts, the 5 most recent orders, and quick
+  links into the other admin pages. New `adminDashboardApi.ts` +
+  `AdminDashboardPage.tsx`.
+- **Testimonials** (`components/ui/TestimonialsSection.tsx` +
+  `lib/config/testimonials.ts`): renders on the Pricing page, but the
+  config array ships **empty** — the component returns `null` until real
+  testimonials are added, since fabricating customer quotes would be
+  misleading. The config file has a commented-out example showing the
+  expected shape and a note to get the customer's permission first.
+
+The other three items (automatic notification requirements, how a public
+order-status lookup would work, how referrals could work) were questions
+about approach, not build requests — answered in the chat response that
+shipped this update rather than built, since they involve real tradeoffs
+(a third-party email service, a new unauthenticated-but-scoped API
+surface, a discount/incentive structure) that are your call to make
+before committing code to any particular design.
+
+### Verified
+- `tsc -b` — clean, no type errors.
+- `vite build` — succeeds; `OrderPage`, `DocumentsPage`,
+  `CoverLetterBuilderPage`, `CvBuilderPage` remain separate lazy-loaded
+  chunks. `AdminDashboardPage` is bundled into the main chunk (small,
+  no heavy dependencies).
+
+---
+
 ## Running it locally
 ```
 npm install

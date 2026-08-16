@@ -55,9 +55,11 @@ export function Header() {
           <BrandMark className="h-14 w-14 shrink-0 rounded-(--radius-md)" />
         </NavLink>
 
-        {/* Desktop nav */}
-        <div className="hidden items-center gap-6 lg:flex">
-          <nav className="flex items-center gap-5 border-x border-white/15 px-5">
+        {/* Desktop nav — xl: not lg:, so this only ever renders once there's
+            genuinely enough width for every item; anything narrower falls
+            back to the hamburger menu instead of overflowing/wrapping. */}
+        <div className="hidden items-center gap-4 xl:flex">
+          <nav className="flex items-center gap-4 border-x border-white/15 px-4">
             {navItems
               .filter((item) => !item.requireAuth || user)
               .map((item) => (
@@ -110,7 +112,7 @@ export function Header() {
         </div>
 
         {/* Mobile controls: sign-in stays visible, everything else lives behind the menu button */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 xl:hidden">
           {!user && (
             <NavLink
               to="/sign-in"
@@ -133,7 +135,7 @@ export function Header() {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="border-t border-white/15 px-4 pb-4 pt-2 lg:hidden">
+        <div className="border-t border-white/15 px-4 pb-4 pt-2 xl:hidden">
           <nav className="flex flex-col gap-1">
             {navItems
               .filter((item) => !item.requireAuth || user)

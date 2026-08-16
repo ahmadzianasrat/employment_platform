@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../lib/i18n/LanguageContext';
 import { IconTelegram, IconWhatsapp, IconMail } from '../ui/icons';
-import { TELEGRAM_PASHTO_URL, TELEGRAM_DARI_URL, WHATSAPP_URL, WHATSAPP_NUMBER_DISPLAY, SUPPORT_EMAIL } from '../../lib/config/channelLinks';
+import { Ltr } from '../ui/Ltr';
+import { TELEGRAM_PASHTO_URL, TELEGRAM_DARI_URL, TELEGRAM_CONTACT_URL, WHATSAPP_URL, WHATSAPP_NUMBER_DISPLAY, SUPPORT_EMAIL } from '../../lib/config/channelLinks';
 
 export function Footer() {
   const { tr } = useLanguage();
@@ -27,7 +28,16 @@ export function Footer() {
               className="inline-flex items-center gap-1.5 font-semibold text-(--color-success) hover:underline"
             >
               <IconWhatsapp className="h-4 w-4" />
-              {tr('footer', 'whatsappPreferred')} · {WHATSAPP_NUMBER_DISPLAY}
+              {tr('footer', 'whatsappPreferred')} · <Ltr>{WHATSAPP_NUMBER_DISPLAY}</Ltr>
+            </a>
+            <a
+              href={TELEGRAM_CONTACT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-(--color-lapis) hover:underline"
+            >
+              <IconTelegram className="h-4 w-4" />
+              {tr('footer', 'telegramContact')}
             </a>
             <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex items-center gap-1.5 text-(--color-lapis) hover:underline">
               <IconMail className="h-4 w-4" />
