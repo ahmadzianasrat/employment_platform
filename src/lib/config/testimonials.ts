@@ -16,6 +16,6 @@ export interface Testimonial {
  * this array is empty, so leaving it empty is completely safe — the
  * section just won't appear until you add something real here.
  */
-export const TESTIMONIALS: Testimonial[] = [
+export const TESTIMONIALS: Testimonial[] = [{ name: 'Zahra K.', context: 'Nurse, Kabul', quote: 'They wrote my CV for a job I never thought I could apply to, and I got an interview the same week.' },
   // { name: 'Zahra K.', context: 'Nurse, Kabul', quote: 'They wrote my CV for a job I never thought I could apply to, and I got an interview the same week.' },
 ];
