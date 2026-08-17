@@ -128,15 +128,58 @@ it. To enable:
 See `src/lib/analytics/ga.ts` for how this works — it's a no-op with no
 network requests at all if the measurement ID isn't set.
 
+## Part 4 — Supabase Auth: fixing the localhost confirmation link + pre-confirmation sign-in
+
+Two related but separate problems, both configured in the Supabase
+dashboard rather than in this repo's code (except where noted):
+
+### 1. Confirmation email links to `localhost:3000`
+Supabase builds the confirmation link from **Authentication → URL
+Configuration → Site URL**, which is still set to its local-dev default
+(`http://localhost:3000`) from before this project had a real domain.
+Fix:
+1. Supabase dashboard → **Authentication → URL Configuration**
+2. Set **Site URL** to `https://hamqar.com`
+3. Under **Redirect URLs**, add `https://hamqar.com/*` (and
+   `http://localhost:5173/*` too, if you still want confirmation links to
+   work correctly when testing locally with `npm run dev`)
+
+This code now also explicitly passes `emailRedirectTo:
+window.location.origin` on sign-up (see `AuthContext.tsx`), which is a
+best practice regardless — but it only takes effect once the domain is
+on the **Redirect URLs** allow-list above; Supabase silently ignores
+`emailRedirectTo` values that aren't on that list and falls back to the
+Site URL instead. Both changes are needed together.
+
+### 2. Users can sign in before confirming their email
+This is a separate toggle: **Authentication → Sign In / Providers →
+Email → "Confirm email"**. If it's off, `signInWithPassword` succeeds for
+unconfirmed accounts — Supabase doesn't check confirmation status by
+default. Turn it on, and unconfirmed users get a clear "Email not
+confirmed" error back from `signIn()` instead (already surfaced to the
+user via the existing error-message UI in `AuthPage.tsx` — no code
+change needed for that part).
+
+One thing to decide: any accounts created **before** you flip this
+toggle, that never confirmed, will be locked out of signing in once it's
+on (expected — that's the point) but won't get a fresh confirmation email
+automatically. If that matters at your current user count, you may want
+to manually check `auth.users` for `email_confirmed_at is null` rows
+first and either prompt those specific people to re-request confirmation
+or confirm them manually from the dashboard.
+
 ## Go-live checklist
 
 Before pointing real traffic (Telegram posts, social shares, etc.) at
 the site:
 
-- [ ] **Run migration 017** (`service_requests.status` auto-recompute
-      trigger) — fixes a bug where a tier-3 order kept showing
-      "delivered" after a new job was added to it. Everything through
-      016 is confirmed applied. See `database/migrations/README.md`.
+- [x] **Migrations 001–019 all applied**, including 017 (status
+      auto-recompute), 018 (dropped the unused job-board tables), and 019
+      (per-user email language). See `database/migrations/README.md`.
+- [ ] **Fix the Supabase Auth Site URL / Redirect URLs** (currently
+      `localhost:3000`) and decide on the "Confirm email" toggle — see
+      Part 4 above. Neither is a code change; both are one-time dashboard
+      settings.
 - [x] **WhatsApp, Telegram contact, easy-load, and HesabPay numbers are
       all real and live** in `src/lib/config/channelLinks.ts` and shown
       directly on Pricing/Guide/Order.

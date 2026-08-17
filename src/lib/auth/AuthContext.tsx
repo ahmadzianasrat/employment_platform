@@ -33,7 +33,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function signUp(email: string, password: string) {
-    const { error } = await supabase.auth.signUp({ email, password });
+    // Without this, Supabase falls back to the project's dashboard-configured
+    // Site URL for the confirmation link — which is why confirmation emails
+    // were landing on localhost:3000. window.location.origin makes the link
+    // correct in both dev and production automatically. IMPORTANT: this only
+    // works once https://hamqar.com (and http://localhost:5173 for dev, if
+    // needed) is also added to Authentication → URL Configuration →
+    // Redirect URLs in the Supabase dashboard — Supabase silently ignores
+    // emailRedirectTo values that aren't on that allow-list and falls back
+    // to the Site URL instead. See DEPLOYMENT.md.
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
     return { error: error?.message ?? null };
   }
 

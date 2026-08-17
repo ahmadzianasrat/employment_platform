@@ -449,6 +449,12 @@ export const STRINGS = {
       ps: 'تاسو تر اوسه تادیې وړ خدمت نه دی غوښتی.',
       da: 'شما هنوز خدمات مصارفی را درخواست نکرده‌اید.',
     },
+    emailLanguageHeading: { en: 'Email language', ps: 'د ایمیل ژبه', da: 'زبان ایمیل' },
+    emailLanguageHelp: {
+      en: 'The language your order-ready notification emails are sent in. Not linked to the site language above.',
+      ps: 'هغه ژبه چې ستاسو د غوښتنلیک-چمتووالي ایمیل خبرتیاوې پرې لیږل کیږي. له پورتني د سایټ ژبې سره تړاو نلري.',
+      da: 'زبانی که ایمیل‌های اطلاع‌رسانی آماده‌شدن سفارش شما با آن ارسال می‌شود. به زبان سایت در بالا مرتبط نیست.',
+    },
     quotaUsed: { en: 'Used', ps: 'کارول شوي', da: 'استفاده‌شده' },
     downloadCv: { en: 'Download CV', ps: 'سي وي (CV) ډاونلوډ کړئ', da: 'دانلود سي وي (CV)' },
     downloadCoverLetter: { en: 'Download cover letter', ps: 'کوور ليټر (Cover Letter) ډاونلوډ کړئ', da: 'دانلود کوور ليتر (Cover Letter)' },

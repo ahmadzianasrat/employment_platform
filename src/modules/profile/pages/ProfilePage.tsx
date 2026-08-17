@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { useLanguage } from '../../../lib/i18n/LanguageContext';
+import { LANGUAGES, type Language } from '../../../lib/i18n/strings';
 import { loadProfile, saveProfile } from '../api/profileApi';
 import { loadCvProfile } from '../../cv/api/cvProfileApi';
 import { loadCoverLetterProfile } from '../../coverLetter/api/coverLetterProfileApi';
@@ -157,6 +158,7 @@ export function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [mobilePhone, setMobilePhone] = useState('');
   const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState<Language>('ps');
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
@@ -183,6 +185,7 @@ export function ProfilePage() {
 
     setMobilePhone(profile.mobile_phone ?? '');
     setWhatsappPhone(profile.whatsapp_phone ?? '');
+    setPreferredLanguage(profile.preferred_language);
     setHasCv(!!cvProfile);
     setHasCoverLetter(!!coverLetterProfile);
     const coveredTypes = new Set(documents.map((d) => d.document_type));
@@ -198,7 +201,11 @@ export function ProfilePage() {
     if (!user) return;
     setSavingProfile(true);
     setProfileSaved(false);
-    const { error } = await saveProfile(user.id, { mobile_phone: mobilePhone.trim(), whatsapp_phone: whatsappPhone.trim() });
+    const { error } = await saveProfile(user.id, {
+      mobile_phone: mobilePhone.trim(),
+      whatsapp_phone: whatsappPhone.trim(),
+      preferred_language: preferredLanguage,
+    });
     setSavingProfile(false);
     if (!error) setProfileSaved(true);
   }
@@ -231,6 +238,21 @@ export function ProfilePage() {
           <div>
             <label className="text-sm font-medium text-(--color-ink)">{tr('profile', 'whatsappLabel')}</label>
             <input type="text" value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-(--color-ink)">{tr('profile', 'emailLanguageHeading')}</label>
+            <select
+              value={preferredLanguage}
+              onChange={(e) => setPreferredLanguage(e.target.value as Language)}
+              className={inputClass}
+            >
+              {LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-(--color-muted)">{tr('profile', 'emailLanguageHelp')}</p>
           </div>
         </div>
         <div className="mt-3 flex items-center gap-3">

@@ -1153,6 +1153,60 @@ alternatives/next steps rather than all implemented at once.
 
 ---
 
+## Update — Job-board table cleanup, richer example CVs, per-user email language, auth confirmation fix: 2026-08-17
+
+### 1. Removed unused job-board tables (`jobs`, `saved_jobs`, `job_alerts`)
+Confirmed zero references left in `src/` (the pivot to CV/cover-letter +
+paid service already stopped reading from these). New migration:
+`database/migrations/018_drop_job_board_tables.sql` — drops all three
+tables plus the migration 013 `pg_cron` job/function.
+**Read the warning comment inside that file before running it**: the
+Hostinger PHP scraper (confirmed elsewhere in this changelog as pushing
+scraped jobs into Supabase every ~15 minutes) is outside this repo, and
+if it's still running, every insert it attempts will start failing once
+`jobs` is gone. Worth turning off its cron/task on Hostinger at the same
+time so it's not left erroring forever for no reason.
+
+### 2. Example CVs/cover letters: fuller, more attractive content
+`src/modules/examples/data/sampleData.ts` rewritten — summaries now lead
+with concrete years of experience, every experience bullet has a specific
+number or outcome (%, headcount, records handled, etc. — all invented but
+plausible), most examples gained a 3rd experience entry, and skills/
+education lists were extended to realistically fill a page rather than
+look sparse. No renderer changes — `CvPreview`/`CoverLetterPreview`
+untouched. Kept content sized to still fit within one A4 preview page.
+
+### 3. Per-user preferred language for email notifications
+New migration `019_profile_language_preference.sql` adds
+`profiles.preferred_language` (`en`/`ps`/`da`, defaults `'ps'`). Added a
+new "Email language" selector to the Profile page's contact-numbers
+section (separate control from the site-wide language switcher — someone
+could browse in English but want emails in Pashto for a relative, etc.).
+`supabase/functions/notify-job-delivered/index.ts` now looks up this
+column and sends the job-ready email in that language — added full
+English/Pashto/Dari copy (previously English-only, a gap called out
+explicitly in the migrations README).
+
+### 4. Auth: email confirmation landing on localhost + pre-confirmation sign-in (explained + partial fix)
+Both root causes are Supabase **dashboard** settings, not app bugs:
+- The confirmation link's domain comes from **Authentication → URL
+  Configuration → Site URL**, still on its `localhost:3000` dev default.
+- Whether unconfirmed users can sign in at all is a separate **"Confirm
+  email"** toggle under Authentication → Sign In / Providers → Email.
+
+Code-side fix applied regardless (best practice, but only takes effect
+once the domain is added to the Redirect URLs allow-list — see below):
+`AuthContext.tsx`'s `signUp()` now passes `emailRedirectTo:
+window.location.origin`. Full walkthrough for the two dashboard changes
+added as **Part 4** in `DEPLOYMENT.md`, including a note on what happens
+to already-unconfirmed accounts if you turn "Confirm email" on now.
+
+### Verified
+- `tsc -b` — clean, no type errors.
+- `vite build` — succeeds.
+
+---
+
 ## Running it locally
 ```
 npm install

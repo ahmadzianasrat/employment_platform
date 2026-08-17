@@ -21,7 +21,9 @@ environment (or catching up an existing one that's missing later ones).
 | `014_manual_source_label.sql` | Backfills `source_label` from `'Manual'` to `'Hamqar.com'` on existing manually-added jobs | ✅ Applied |
 | `015_service_requests.sql` | Creates `service_requests` table (paid CV/cover-letter application-package orders) + RLS; creates private `service-requests` storage bucket + folder-scoped RLS; adds `admin_list_service_request_owners()` for the admin Orders UI | ✅ Applied |
 | `016_profiles_and_job_slots.sql` | Creates `profiles` table (contact numbers); normalizes `service_requests` into a `service_request_jobs` child table (up to 3 job slots per order); creates private `deliverables` storage bucket | ✅ Applied |
-| `017_auto_status_recompute.sql` | Adds a trigger that recomputes `service_requests.status` from its job slots' statuses whenever a job is added or its status changes, so an order can't be left showing "delivered" after a new job slot is added to it | ⏳ Not yet applied — **run this to fix the stale-"delivered"-status bug on tier-3 orders** |
+| `017_auto_status_recompute.sql` | Adds a trigger that recomputes `service_requests.status` from its job slots' statuses whenever a job is added or its status changes, so an order can't be left showing "delivered" after a new job slot is added to it | ✅ Applied |
+| `018_drop_job_board_tables.sql` | Drops the unused pre-pivot `jobs`, `saved_jobs`, and `job_alerts` tables (and the migration 013 pg_cron job/function) — confirmed unreferenced anywhere in `src/`. **Read the warning inside the file first** if the Hostinger PHP scraper is still running | ✅ Applied |
+| `019_profile_language_preference.sql` | Adds `preferred_language` (`en`/`ps`/`da`, defaults `'ps'`) to `profiles`, so `notify-job-delivered` can email customers in their own language | ✅ Applied |
 
 Each file is idempotent-unsafe by design (uses `create table`, not
 `create table if not exists`) — running a file twice on the same database
@@ -30,7 +32,7 @@ already applied it and something else is wrong if you're trying again.
 
 ## Adding a new migration
 
-Name the next one `018_description.sql`, add a row to the table above, and
+Name the next one `020_description.sql`, add a row to the table above, and
 note the date/time (Kabul time) it was applied in `CHANGES.md`.
 
 ## Email notifications (Resend) — one-time setup
@@ -77,7 +79,9 @@ in your Supabase dashboard URL).
    not set`, `no email for user`) rather than failing silently in a way
    that's hard to debug.
 
-The email content itself (English-only, currently) lives directly in
-`index.ts` — edit the `html:` string there and redeploy to change the
-wording, or to add Pashto/Dari once you know which language a given
-customer prefers (not something this app currently tracks per user).
+The email content is now localized (English/Pashto/Dari) and keyed off
+each customer's `profiles.preferred_language` (migration 019, defaults to
+Pashto), which they set on their Profile page. The wording for all three
+languages lives directly in the `EMAIL_CONTENT` object in `index.ts` —
+edit it there and run `supabase functions deploy notify-job-delivered`
+again to change any of the copy.
