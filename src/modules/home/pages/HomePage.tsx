@@ -3,6 +3,13 @@ import { useLanguage } from '../../../lib/i18n/LanguageContext';
 import { btnPrimary, btnSecondary } from '../../../components/ui/buttonStyles';
 import { FaqAccordion } from '../../../components/ui/FaqAccordion';
 import { IconFileText, IconMail, IconWallet } from '../../../components/ui/icons';
+import { CvPreview } from '../../cv/components/CvPreview';
+import { CV_EXAMPLES } from '../../examples/data/sampleData';
+
+// The two most visually distinct templates, used purely to show off real
+// output on the homepage — same components/data as /examples, not
+// separate marketing images to keep in sync by hand.
+const HERO_SHOWCASE = CV_EXAMPLES.filter((ex) => ex.template === 'sidebar' || ex.template === 'modern');
 
 export function HomePage() {
   const { tr } = useLanguage();
@@ -29,17 +36,44 @@ export function HomePage() {
     <div>
       {/* Hero */}
       <section className="border-b border-(--color-line) bg-(--color-paper-raised)">
-        <div className="mx-auto max-w-4xl px-6 py-16 text-center sm:py-20">
-          <h1 className="font-display text-3xl font-bold leading-tight text-(--color-ink) sm:text-4xl">
-            {tr('home', 'heroTitle')}
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-(--color-muted) sm:text-lg">{tr('home', 'heroSubtitle')}</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/cv-builder" className={btnPrimary}>
-              {tr('home', 'heroCtaPrimary')}
-            </Link>
-            <Link to="/pricing" className={btnSecondary}>
-              {tr('home', 'heroCtaSecondary')}
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="text-center lg:text-left">
+              <h1 className="font-display text-3xl font-bold leading-tight text-(--color-ink) sm:text-4xl">
+                {tr('home', 'heroTitle')}
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-(--color-muted) sm:text-lg lg:mx-0">{tr('home', 'heroSubtitle')}</p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+                <Link to="/cv-builder" className={btnPrimary}>
+                  {tr('home', 'heroCtaPrimary')}
+                </Link>
+                <Link to="/pricing" className={btnSecondary}>
+                  {tr('home', 'heroCtaSecondary')}
+                </Link>
+              </div>
+            </div>
+
+            {/* Real, live-rendered CV templates — same components as the CV
+                builder and /examples — so this is an honest preview of the
+                actual output, not a mockup image that could drift out of
+                sync with what the templates really look like. */}
+            <div className="mx-auto flex w-full max-w-sm gap-4 sm:max-w-md">
+              {HERO_SHOWCASE.map((ex, i) => (
+                <Link
+                  key={ex.id}
+                  to="/examples"
+                  className={`block flex-1 transition-transform hover:-translate-y-1 ${i === 1 ? 'mt-8' : ''}`}
+                >
+                  <div className="pointer-events-none rounded-(--radius-lg) shadow-lg ring-1 ring-black/5">
+                    <CvPreview cv={ex.cv} template={ex.template} sticky={false} showFooterNote={false} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="mt-6 text-center lg:text-right">
+            <Link to="/examples" className="text-sm font-semibold text-(--color-lapis) hover:underline">
+              {tr('home', 'heroShowcaseCta')}
             </Link>
           </div>
         </div>

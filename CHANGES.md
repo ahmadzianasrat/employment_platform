@@ -1207,6 +1207,93 @@ to already-unconfirmed accounts if you turn "Confirm email" on now.
 
 ---
 
+## Update — RTL preview bug fixed, photo support, template gallery overhaul, homepage/examples redesign: 2026-08-18
+
+Prompted by looking at a competitor's resume-builder site (aslicv.com) for
+design inspiration, plus the RTL bug report. Nothing here copies their
+specific templates — new layouts built from this project's own lapis/
+saffron palette — but the "more template variety + photo support" pattern
+is genuinely worth having regardless of where the idea came from.
+
+### 1. Fixed: CV/cover letter content shifting right in Pashto/Dari mode
+Root cause: `LanguageContext.tsx` sets `document.documentElement.dir =
+'rtl'` site-wide when the UI language is Pashto or Dari, and
+`CvPreview.tsx`/`CoverLetterPreview.tsx` never overrode that — so English
+CV content inherited `rtl` and misaligned. Fix: both components' preview
+wrapper now hard-sets `dir="ltr"`, since CV/cover letter content is always
+Latin-script regardless of site language. This only ever affected the
+on-screen live preview — `generatePdf.ts`/`generateCoverLetterPdf.ts` draw
+the PDF programmatically via jsPDF, not from the DOM, so downloaded PDFs
+were never affected by this bug.
+
+### 2. Photo support, all templates
+- `CvData` gained `photoDataUrl?: string | null` — a compressed square
+  JPEG stored as a data URL **directly inside the existing `cv_profiles.data`
+  jsonb column**. No migration, no new Storage bucket/policy needed.
+- New `src/lib/utils/compressAvatarToDataUrl.ts` — client-side center-crop
+  + resize to 240px + JPEG compress before it ever touches the network.
+- Upload/remove UI added to `/cv-builder`'s Personal Info section.
+- Every CV template now has a photo slot. No photo uploaded → falls back
+  to a colored initials avatar (matches `CvPreview.tsx`'s `Avatar`
+  component and `generatePdf.ts`'s `drawAvatar()`) rather than a blank box.
+- PDF-side circular photo clipping uses jsPDF's
+  `saveGraphicsState()/circle()/clip()/discardPath()/addImage()/restoreGraphicsState()`
+  pattern — smoke-tested directly against the installed jsPDF build with a
+  synthetic image before shipping, since this is the one part of this
+  change that isn't exercised by `tsc`/`vite build` alone.
+
+### 3. New templates
+- CV: **Sidebar Photo** (`sidebar`) — full-height lapis-blue sidebar,
+  larger centered photo, closest to a premium sidebar-resume layout,
+  flagship/default-first option in the picker.
+- Cover letter: **Banner** (`banner`) — centered name banner + saffron
+  accent stripe, recipient/sender info in a clean two-column block below.
+- Both added to their respective `CvTemplate`/`CoverLetterTemplate` union
+  types, `CvPreview.tsx`/`CoverLetterPreview.tsx`, and
+  `generatePdf.ts`/`generateCoverLetterPdf.ts`.
+
+### 4. Template picker → live thumbnail gallery
+Both builder pages' template pickers were plain text cards with a
+label + one-line description. Replaced with a grid of actual small
+live-rendered previews (the real `CvPreview`/`CoverLetterPreview`
+components, using the user's own in-progress data) — added `sticky` and
+`showFooterNote` props to both preview components so they render cleanly
+inside a small grid cell instead of assuming they're the single large
+preview panel.
+
+### 5. Examples page: 5 CV designs, 3 cover letter designs, one per template
+`sampleData.ts` rewritten — one fictional profile per CV template (added
+a 5th, "IT & Tech Support", to showcase the new `sidebar` template) and
+one per cover letter template. Names de-genericized (e.g. "Fatima Noori"
+instead of "Sample Candidate — Nursing") per feedback that the examples
+read as placeholder-y.
+**Photos intentionally left unset** on every example — CvPreview/
+generatePdf's initials-avatar fallback fills that role instead of a real
+photo, since putting an actual stock photo of a real person next to an
+invented CV would misrepresent them as a Hamqar customer (same reasoning
+the empty `testimonials.ts` file already documents). Worth a conscious
+decision later if/when real, permission-granted customer photos exist.
+
+### 6. Homepage hero refresh
+Hero section now shows two live-rendered template previews (sidebar +
+modern, pulled from the same `sampleData.ts` used on `/examples`) next to
+the CTA buttons, linking through to `/examples`. Deliberately did **not**
+add fabricated stats/social-proof numbers (e.g. "2,000+ CVs built") —
+unlike a template inspiration site, this is a real business and those
+numbers would need to be genuinely true; happy to add a real usage
+counter later if that data becomes available and worth surfacing.
+
+### Verified
+- `tsc -b` — clean.
+- `vite build` — succeeds (same pre-existing >500kB chunk-size warning as
+  before, unrelated to this change — jsPDF/html2canvas are the bulk of it).
+- `oxlint` — 0 errors, same 3 pre-existing warnings as before this change.
+- jsPDF circular photo-clip pattern smoke-tested directly against
+  `node_modules/jspdf` with a synthetic image (outside the app, since this
+  path isn't exercised by `tsc`/`vite build`).
+
+---
+
 ## Running it locally
 ```
 npm install

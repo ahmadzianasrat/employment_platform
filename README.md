@@ -215,17 +215,24 @@ Not built yet, worth considering for later — see the chat response from
 
 ## Features implemented so far
 - CV builder with PDF export (personal info, education, experience,
-  skills, languages with native-language highlighting, address), **four**
-  visual templates (Classic, Modern sidebar, Minimal centered, Compact
-  two-column) with a **live scaled preview** next to the form so users can
-  see the layout before downloading, autosaved to Supabase per signed-in
-  user (`cv_profiles` table) so it survives refreshes and works across
-  devices — signed-out visitors can still use the builder, it just
-  doesn't persist
+  skills, languages with native-language highlighting, address, optional
+  profile photo), **five** visual templates (Classic, Modern sidebar,
+  Minimal centered, Compact two-column, Sidebar Photo — a full-height
+  color sidebar with a larger photo) with a **live scaled preview** next
+  to the form and a **live-thumbnail template picker** (real mini
+  previews of the user's own in-progress CV, not generic icons) so users
+  can see the actual layout before downloading, autosaved to Supabase per
+  signed-in user (`cv_profiles` table) so it survives refreshes and works
+  across devices — signed-out visitors can still use the builder, it just
+  doesn't persist. Photos are compressed client-side to a small square
+  JPEG and stored as a data URL directly inside `cv_profiles.data` (no
+  separate Storage bucket) — see `compressAvatarToDataUrl.ts`. Templates
+  with no photo uploaded fall back to a colored initials avatar rather
+  than a blank box, in both the live preview and the downloaded PDF.
 - Cover Letter Builder (`/cover-letter`): same pattern as the CV builder —
-  autosaved to Supabase (`cover_letter_profiles`), two templates (Formal /
-  Modern) with a live preview, optional "fill in my contact details from
-  my CV" button
+  autosaved to Supabase (`cover_letter_profiles`), **three** templates
+  (Formal / Modern / Banner) with a live-thumbnail picker and preview,
+  optional "fill in my contact details from my CV" button
 - Document vault: upload ID card, passport, driving license, TIN, school
   diploma (single-entry types) and university diplomas, work experience,
   employment contracts, references (repeatable — multiple entries

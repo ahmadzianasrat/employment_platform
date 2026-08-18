@@ -5,13 +5,31 @@ function orPlaceholder(value: string, placeholder: string) {
   return value.trim() ? value : placeholder;
 }
 
-export function CoverLetterPreview({ letter, template }: { letter: CoverLetterData; template: CoverLetterTemplate }) {
+export function CoverLetterPreview({
+  letter,
+  template,
+  sticky = true,
+  showFooterNote = true,
+}: {
+  letter: CoverLetterData;
+  template: CoverLetterTemplate;
+  /** Set false when rendering as a small thumbnail (e.g. the template picker) inside a grid, where position:sticky isn't wanted. */
+  sticky?: boolean;
+  /** Set false for thumbnails — the "Live preview" caption doesn't make sense at a glance in a picker grid. */
+  showFooterNote?: boolean;
+}) {
   const salutation = letter.recipientName ? `Dear ${letter.recipientName},` : 'Dear Hiring Manager,';
   const body = [letter.opening, letter.motivation, letter.closing].filter((p) => p.trim());
 
   return (
-    <div className="sticky top-4">
-      <div className="aspect-[210/297] w-full overflow-hidden rounded-(--radius-md) border border-(--color-line) bg-white shadow-sm">
+    <div className={sticky ? 'sticky top-4' : ''}>
+      {/* dir="ltr" always — cover letter content is always English/Latin-script
+          regardless of the site's current UI language, so it must not inherit
+          `dir="rtl"` from <html> when browsing in Pashto/Dari. */}
+      <div
+        dir="ltr"
+        className="aspect-[210/297] w-full overflow-hidden rounded-(--radius-md) border border-(--color-line) bg-white shadow-sm"
+      >
         <div className="h-full w-full text-[6.2px] leading-relaxed text-[#101B2D]">
           {template === 'modern' ? (
             <div>
@@ -29,6 +47,34 @@ export function CoverLetterPreview({ letter, template }: { letter: CoverLetterDa
                   .map((l, i) => <p key={i} className="mt-[1px]">{l}</p>)}
                 <div className="mt-[6px] h-[1px] w-full" style={{ background: '#C87A2E' }} />
                 <p className="mt-[6px] font-bold">{salutation}</p>
+                <div className="mt-[4px] space-y-[4px]">
+                  {body.length > 0 ? body.map((p, i) => <p key={i}>{p}</p>) : <p style={{ color: '#9a9a9a' }}>Your letter content will appear here.</p>}
+                </div>
+                <p className="mt-[6px]">{letter.signOff || 'Sincerely,'}</p>
+                <p className="mt-[8px] font-bold" style={{ color: '#1B4B6B' }}>{orPlaceholder(letter.fullName, 'Your Name')}</p>
+              </div>
+            </div>
+          ) : template === 'banner' ? (
+            <div>
+              <div className="py-[6%] text-center text-white" style={{ background: '#1B4B6B' }}>
+                <p className="text-[12px] font-bold tracking-wide">{orPlaceholder(letter.fullName, 'Your Name')}</p>
+                {letter.jobTitle && <p className="mt-[2px]" style={{ color: '#FFDCB4' }}>Application for {letter.jobTitle}</p>}
+              </div>
+              <div className="h-[3px] w-full" style={{ background: '#C87A2E' }} />
+              <div className="p-[6%]">
+                <div className="flex items-start justify-between">
+                  <div>
+                    {[letter.recipientName, letter.recipientTitle, letter.organizationName, letter.organizationAddress]
+                      .filter(Boolean)
+                      .map((l, i) => <p key={i}>{l}</p>)}
+                  </div>
+                  <div className="text-right" style={{ color: '#646464' }}>
+                    {letter.date && <p>{letter.date}</p>}
+                    {letter.email && <p>{letter.email}</p>}
+                    {letter.phone && <p>{letter.phone}</p>}
+                  </div>
+                </div>
+                <p className="mt-[8px] font-bold">{salutation}</p>
                 <div className="mt-[4px] space-y-[4px]">
                   {body.length > 0 ? body.map((p, i) => <p key={i}>{p}</p>) : <p style={{ color: '#9a9a9a' }}>Your letter content will appear here.</p>}
                 </div>
@@ -58,7 +104,9 @@ export function CoverLetterPreview({ letter, template }: { letter: CoverLetterDa
           )}
         </div>
       </div>
-      <p className="mt-2 text-center text-xs text-(--color-muted)">Live preview — actual PDF may wrap slightly differently</p>
+      {showFooterNote && (
+        <p className="mt-2 text-center text-xs text-(--color-muted)">Live preview — actual PDF may wrap slightly differently</p>
+      )}
     </div>
   );
 }

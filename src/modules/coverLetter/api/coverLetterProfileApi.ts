@@ -2,7 +2,7 @@ import { supabase } from '../../../lib/supabase/client';
 import type { CoverLetterData } from '../types/coverLetter';
 import { EMPTY_COVER_LETTER } from '../types/coverLetter';
 
-export type CoverLetterTemplate = 'formal' | 'modern';
+export type CoverLetterTemplate = 'formal' | 'modern' | 'banner';
 
 export interface CoverLetterProfile {
   data: CoverLetterData;

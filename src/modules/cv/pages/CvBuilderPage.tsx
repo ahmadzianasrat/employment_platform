@@ -5,8 +5,9 @@ import { generateCvPdf } from '../lib/generatePdf';
 import { trackEvent } from '../../../lib/analytics/ga';
 import { loadCvProfile, saveCvProfile } from '../api/cvProfileApi';
 import type { CvTemplate } from '../api/cvProfileApi';
+import { compressAvatarToDataUrl } from '../../../lib/utils/compressAvatarToDataUrl';
 import { btnPrimary, btnDashed, btnDangerOutlineSm } from '../../../components/ui/buttonStyles';
-import { IconDownload, IconPlus, IconTrash, IconCheck } from '../../../components/ui/icons';
+import { IconDownload, IconPlus, IconTrash, IconCheck, IconUpload } from '../../../components/ui/icons';
 import { CvPreview } from '../components/CvPreview';
 import {
   EMPTY_CV,
@@ -26,8 +27,9 @@ const PROFICIENCY_LEVELS: { value: LanguageProficiency; labelKey: string }[] = [
 ];
 
 const TEMPLATE_OPTIONS: { value: CvTemplate; labelKey: string; descKey: string }[] = [
-  { value: 'classic', labelKey: 'templateClassic', descKey: 'templateClassicDesc' },
+  { value: 'sidebar', labelKey: 'templateSidebar', descKey: 'templateSidebarDesc' },
   { value: 'modern', labelKey: 'templateModern', descKey: 'templateModernDesc' },
+  { value: 'classic', labelKey: 'templateClassic', descKey: 'templateClassicDesc' },
   { value: 'minimal', labelKey: 'templateMinimal', descKey: 'templateMinimalDesc' },
   { value: 'compact', labelKey: 'templateCompact', descKey: 'templateCompactDesc' },
 ];
@@ -137,6 +139,32 @@ export function CvBuilderPage() {
     trackEvent({ name: 'cv_pdf_downloaded', template });
   }
 
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  async function handlePhotoUpload(file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setPhotoError(tr('cv', 'photoErrorType'));
+      return;
+    }
+    setPhotoError(null);
+    setPhotoBusy(true);
+    try {
+      const dataUrl = await compressAvatarToDataUrl(file);
+      updateField('photoDataUrl', dataUrl);
+    } catch {
+      setPhotoError(tr('cv', 'photoErrorGeneric'));
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  function handleRemovePhoto() {
+    updateField('photoDataUrl', null);
+    setPhotoError(null);
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -164,22 +192,24 @@ export function CvBuilderPage() {
       )}
 
       {/* Template selector */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {TEMPLATE_OPTIONS.map((t) => (
           <button
             key={t.value}
             onClick={() => setTemplate(t.value)}
-            className={`rounded-(--radius-lg) border-2 p-3 text-left transition-colors ${
+            className={`overflow-hidden rounded-(--radius-lg) border-2 text-left transition-colors ${
               template === t.value
                 ? 'border-(--color-lapis) bg-(--color-lapis)/5'
                 : 'border-(--color-line) hover:border-(--color-lapis)/40'
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-(--color-ink)">{tr('cv', t.labelKey)}</span>
-              {template === t.value && <IconCheck className="h-4 w-4 shrink-0 text-(--color-lapis)" />}
+            <div className="pointer-events-none px-2 pt-2">
+              <CvPreview cv={cv} template={t.value} sticky={false} showFooterNote={false} />
             </div>
-            <p className="mt-1 text-xs text-(--color-muted)">{tr('cv', t.descKey)}</p>
+            <div className="flex items-center justify-between px-3 pb-2 pt-1.5">
+              <span className="text-xs font-semibold text-(--color-ink)">{tr('cv', t.labelKey)}</span>
+              {template === t.value && <IconCheck className="h-3.5 w-3.5 shrink-0 text-(--color-lapis)" />}
+            </div>
           </button>
         ))}
       </div>
@@ -191,6 +221,44 @@ export function CvBuilderPage() {
           <h2 className="font-display text-lg font-semibold text-(--color-lapis)">
             {tr('cv', 'sectionPersonal')}
           </h2>
+
+          {/* Photo — optional, but every template has a slot for it now.
+              Compressed client-side (compressAvatarToDataUrl) to a small
+              square JPEG data URL stored directly in cv.photoDataUrl, so
+              there's no separate upload request or Storage bucket involved. */}
+          <div className="mt-3 flex items-center gap-4">
+            {cv.photoDataUrl ? (
+              <img src={cv.photoDataUrl} alt="" className="h-16 w-16 rounded-full object-cover" />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-(--color-lapis) text-lg font-bold text-white">
+                {(cv.fullName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('')) || '?'}
+              </div>
+            )}
+            <div>
+              <div className="flex gap-2">
+                <label className={`${btnDashed} cursor-pointer`}>
+                  <IconUpload className="h-3.5 w-3.5" />
+                  {photoBusy ? tr('cv', 'photoUploading') : tr('cv', 'photoUpload')}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handlePhotoUpload(e.target.files?.[0])}
+                    disabled={photoBusy}
+                  />
+                </label>
+                {cv.photoDataUrl && (
+                  <button type="button" onClick={handleRemovePhoto} className={btnDangerOutlineSm}>
+                    <IconTrash className="h-3.5 w-3.5" />
+                    {tr('cv', 'photoRemove')}
+                  </button>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-(--color-muted)">{tr('cv', 'photoHelp')}</p>
+              {photoError && <p className="mt-1 text-xs text-(--color-danger)">{photoError}</p>}
+            </div>
+          </div>
+
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
             <div>
               <label className={labelClass}>{tr('cv', 'fullName')}</label>

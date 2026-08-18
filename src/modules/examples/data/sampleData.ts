@@ -4,22 +4,28 @@ import type { CvTemplate } from '../../cv/api/cvProfileApi';
 import type { CoverLetterTemplate } from '../../coverLetter/api/coverLetterProfileApi';
 
 /**
- * Entirely fictional names, employers, and details — NOT real past
- * customers. Labeled as "Sample" throughout ExamplesPage.tsx for that
- * reason. If real, permission-granted examples become available later
- * (same rule as testimonials.ts), swap them in here instead — but never
- * present invented work as a real delivered order.
+ * Entirely fictional people — invented names, employers, and details, NOT
+ * real past customers. Labeled as illustrative via the disclaimer banner
+ * at the top of ExamplesPage.tsx for that reason (same rule as
+ * testimonials.ts — never present invented work as a real delivered
+ * order without real, permission-granted material).
  *
- * Deliberately written with full, achievement-oriented content (specific
- * numbers, tools, and outcomes in every bullet, 5-6 skills, 3 languages
- * where realistic) rather than one-line placeholders — this page's job is
- * to show a visitor what a genuinely strong, complete CV/cover letter
- * looks like so they want the finished product, not a sparse template
- * with the blanks technically filled in. Still kept to roughly one A4
- * page's worth of content per entry (CvPreview/CoverLetterPreview render
- * a fixed-height page and clip anything beyond it) — don't add a 4th
- * experience entry or a second full paragraph without checking the live
- * preview still fits.
+ * photoDataUrl is deliberately left null on every entry here rather than
+ * using a stock photo of an actual person: putting a real identifiable
+ * face next to a fake CV would misrepresent a real person as a Hamqar
+ * customer, which is the same consent problem the empty testimonials
+ * file is guarding against. Leaving it null isn't a step backward though
+ * — CvPreview/generatePdf.ts both render a colored initials avatar
+ * whenever there's no photo (see the Avatar component / drawAvatar()),
+ * so every example that uses a photo-enabled template (sidebar/modern)
+ * still shows a deliberate, designed circle here — never an empty box —
+ * demonstrating exactly what a real customer without an uploaded photo
+ * would see too. If real, permission-granted customer photos become
+ * available later, they can replace these with actual photoDataUrl values.
+ *
+ * One example per CV template (5) and per cover letter template (3), so
+ * the /examples gallery actually shows the full range rather than
+ * repeating one or two designs.
  */
 export interface CvExample {
   id: string;
@@ -41,13 +47,14 @@ export const CV_EXAMPLES: CvExample[] = [
     fieldLabel: 'Nursing',
     template: 'classic',
     cv: {
-      fullName: 'Sample Candidate — Nursing',
+      fullName: 'Fatima Noori',
       email: 'example@sample.com',
       phone: '+93 7X XXX XXXX',
       address: 'Kabul, Afghanistan',
       location: 'Kabul',
       summary:
         'Registered nurse with 5+ years across emergency and general ward care, including 2 years leading a night-shift team of 6. Strong record in patient triage, medication administration, infection control, and mentoring new staff — comfortable working under pressure in high-volume, resource-limited settings.',
+      photoDataUrl: null,
       education: [
         { id: 'e1', institution: 'Kabul Institute of Health Sciences', degree: 'Diploma in Nursing (Distinction)', year: '2019' },
         { id: 'e2', institution: 'Afghan Red Crescent Society', degree: 'Certificate, Basic Life Support & First Aid', year: '2022' },
@@ -92,13 +99,14 @@ export const CV_EXAMPLES: CvExample[] = [
     fieldLabel: 'Logistics & Warehouse',
     template: 'modern',
     cv: {
-      fullName: 'Sample Candidate — Logistics',
+      fullName: 'Farhad Amiri',
       email: 'example@sample.com',
       phone: '+93 7X XXX XXXX',
       address: 'Herat, Afghanistan',
       location: 'Herat',
       summary:
         'Warehouse supervisor with 6+ years managing inventory, dispatch, and small teams across NGO and private-sector logistics operations. Track record of cutting stock discrepancies, tightening intake procedures, and keeping delivery schedules on time under tight donor and client deadlines.',
+      photoDataUrl: null,
       education: [
         { id: 'e1', institution: 'Herat University', degree: 'Bachelor of Business Administration', year: '2016' },
         { id: 'e2', institution: 'Herat Chamber of Commerce', degree: 'Certificate, Supply Chain Fundamentals', year: '2021' },
@@ -143,13 +151,14 @@ export const CV_EXAMPLES: CvExample[] = [
     fieldLabel: 'Teaching',
     template: 'minimal',
     cv: {
-      fullName: 'Sample Candidate — Teaching',
+      fullName: 'Zahra Rahimi',
       email: 'example@sample.com',
       phone: '+93 7X XXX XXXX',
       address: 'Mazar-i-Sharif, Afghanistan',
       location: 'Mazar-i-Sharif',
       summary:
         'Secondary school English teacher with 4+ years of classroom experience across grades 9–12. Focused on communicative teaching methods, measurable student outcomes, and building programs (peer tutoring, exam prep) that outlast a single school year.',
+      photoDataUrl: null,
       education: [
         { id: 'e1', institution: 'Balkh University', degree: 'Bachelor of Education, English Literature', year: '2020' },
         { id: 'e2', institution: 'British Council Afghanistan', degree: 'TKT (Teaching Knowledge Test), Modules 1–3', year: '2022' },
@@ -186,13 +195,14 @@ export const CV_EXAMPLES: CvExample[] = [
     fieldLabel: 'Administration',
     template: 'compact',
     cv: {
-      fullName: 'Sample Candidate — Administration',
+      fullName: 'Omid Karimi',
       email: 'example@sample.com',
       phone: '+93 7X XXX XXXX',
       address: 'Kabul, Afghanistan',
       location: 'Kabul',
       summary:
         'Office administrator with 3+ years supporting NGO program teams end-to-end — scheduling, correspondence, procurement tracking, and donor-compliant filing. Known for keeping a 20-person team organized without needing to be chased for updates.',
+      photoDataUrl: null,
       education: [
         { id: 'e1', institution: 'Kabul University', degree: 'Bachelor of Public Administration', year: '2021' },
         { id: 'e2', institution: 'Kabul Skills Institute', degree: 'Certificate, Office Management & MS Office', year: '2021' },
@@ -224,6 +234,50 @@ export const CV_EXAMPLES: CvExample[] = [
       ],
     },
   },
+  {
+    id: 'it-support',
+    fieldLabel: 'IT & Tech Support',
+    template: 'sidebar',
+    cv: {
+      fullName: 'Sardar Popal',
+      email: 'example@sample.com',
+      phone: '+93 7X XXX XXXX',
+      address: 'Kabul, Afghanistan',
+      location: 'Kabul',
+      summary:
+        'IT support specialist with 4+ years resolving hardware, network, and software issues for a 150-user NGO office. Known for turning around tickets fast and documenting fixes so the same issue never needs escalation twice.',
+      photoDataUrl: null,
+      education: [
+        { id: 'e1', institution: 'Kabul Polytechnic University', degree: 'Bachelor of Computer Science', year: '2020' },
+        { id: 'e2', institution: 'Cisco Networking Academy', degree: 'CCNA: Introduction to Networks', year: '2022' },
+      ],
+      experience: [
+        {
+          id: 'x1',
+          employer: 'Sample NGO Country Office',
+          role: 'IT Support Specialist',
+          duration: '2021 – Present',
+          description:
+            'Handle 30+ support tickets weekly for a 150-user office — hardware repairs, network troubleshooting, and Microsoft 365 administration. Cut average ticket resolution time from 2 days to 6 hours by building a shared fix-documentation library. Manage the office\u2019s 40-device Wi-Fi network and backup routines.',
+        },
+        {
+          id: 'x2',
+          employer: 'Sample Computer Institute',
+          role: 'Junior IT Technician',
+          duration: '2020 – 2021',
+          description:
+            'Assembled and configured desktop workstations, installed and licensed software for 3 partner offices, and provided basic user training on new equipment.',
+        },
+      ],
+      skills:
+        'Windows & Microsoft 365 administration, network troubleshooting (CCNA), hardware diagnostics & repair, ticketing systems, backup & data recovery, basic Python scripting',
+      languages: [
+        { id: 'l1', name: 'Pashto', proficiency: 'native' },
+        { id: 'l2', name: 'Dari', proficiency: 'fluent' },
+        { id: 'l3', name: 'English', proficiency: 'advanced' },
+      ],
+    },
+  },
 ];
 
 export const COVER_LETTER_EXAMPLES: CoverLetterExample[] = [
@@ -232,7 +286,7 @@ export const COVER_LETTER_EXAMPLES: CoverLetterExample[] = [
     fieldLabel: 'Nursing',
     template: 'formal',
     letter: {
-      fullName: 'Sample Candidate — Nursing',
+      fullName: 'Fatima Noori',
       email: 'example@sample.com',
       phone: '+93 7X XXX XXXX',
       address: 'Kabul, Afghanistan',
@@ -254,9 +308,9 @@ export const COVER_LETTER_EXAMPLES: CoverLetterExample[] = [
   {
     id: 'logistics',
     fieldLabel: 'Logistics & Warehouse',
-    template: 'modern',
+    template: 'banner',
     letter: {
-      fullName: 'Sample Candidate — Logistics',
+      fullName: 'Farhad Amiri',
       email: 'example@sample.com',
       phone: '+93 7X XXX XXXX',
       address: 'Herat, Afghanistan',
@@ -278,9 +332,9 @@ export const COVER_LETTER_EXAMPLES: CoverLetterExample[] = [
   {
     id: 'teaching',
     fieldLabel: 'Teaching',
-    template: 'formal',
+    template: 'modern',
     letter: {
-      fullName: 'Sample Candidate — Teaching',
+      fullName: 'Zahra Rahimi',
       email: 'example@sample.com',
       phone: '+93 7X XXX XXXX',
       address: 'Mazar-i-Sharif, Afghanistan',

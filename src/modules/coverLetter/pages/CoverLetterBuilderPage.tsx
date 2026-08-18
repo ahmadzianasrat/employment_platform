@@ -15,6 +15,7 @@ import { IconDownload, IconCheck } from '../../../components/ui/icons';
 const TEMPLATE_OPTIONS: { value: CoverLetterTemplate; labelKey: string; descKey: string }[] = [
   { value: 'formal', labelKey: 'templateFormal', descKey: 'templateFormalDesc' },
   { value: 'modern', labelKey: 'templateModern', descKey: 'templateModernDesc' },
+  { value: 'banner', labelKey: 'templateBanner', descKey: 'templateBannerDesc' },
 ];
 
 const FIELD_CLASS =
@@ -115,22 +116,24 @@ export function CoverLetterBuilderPage() {
         </button>
       )}
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:max-w-md">
+      <div className="mt-6 grid grid-cols-3 gap-3 sm:max-w-2xl">
         {TEMPLATE_OPTIONS.map((t) => (
           <button
             key={t.value}
             onClick={() => setTemplate(t.value)}
-            className={`rounded-(--radius-lg) border-2 p-3 text-left transition-colors ${
+            className={`overflow-hidden rounded-(--radius-lg) border-2 text-left transition-colors ${
               template === t.value
                 ? 'border-(--color-lapis) bg-(--color-lapis)/5'
                 : 'border-(--color-line) hover:border-(--color-lapis)/40'
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-(--color-ink)">{tr('coverLetter', t.labelKey)}</span>
-              {template === t.value && <IconCheck className="h-4 w-4 shrink-0 text-(--color-lapis)" />}
+            <div className="pointer-events-none px-2 pt-2">
+              <CoverLetterPreview letter={letter} template={t.value} sticky={false} showFooterNote={false} />
             </div>
-            <p className="mt-1 text-xs text-(--color-muted)">{tr('coverLetter', t.descKey)}</p>
+            <div className="flex items-center justify-between px-3 pb-2 pt-1.5">
+              <span className="text-xs font-semibold text-(--color-ink)">{tr('coverLetter', t.labelKey)}</span>
+              {template === t.value && <IconCheck className="h-3.5 w-3.5 shrink-0 text-(--color-lapis)" />}
+            </div>
           </button>
         ))}
       </div>

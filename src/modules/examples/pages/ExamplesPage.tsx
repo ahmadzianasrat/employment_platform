@@ -19,7 +19,7 @@ export function ExamplesPage() {
       </div>
 
       <h2 className="mt-12 font-display text-xl font-semibold text-(--color-ink)">{tr('nav', 'cvBuilder')}</h2>
-      <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {CV_EXAMPLES.map((ex) => (
           <div key={ex.id}>
             <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-(--color-lapis)">{ex.fieldLabel}</p>
